@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Perfect Fit Calculator</title>
+    <title>Offline Ready Calculator</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #000000;
             font-family: 'Segoe UI', sans-serif;
-            /* dvh એટલે Dynamic Height - મોબાઈલ માટે ખાસ */
             height: 100dvh; 
             width: 100vw;
             display: flex;
@@ -25,14 +24,14 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 10px; /* પેડિંગ થોડું ઘટાડ્યું */
+            padding: 10px;
             box-sizing: border-box;
             position: relative;
         }
 
         /* ડિસ્પ્લે એરિયા */
         #display-container {
-            flex: 1; /* આને થોડું નાનું કર્યું */
+            flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -59,6 +58,7 @@
         #status-msg {
             color: #4caf50;
             font-size: 0.8rem;
+            font-weight: bold;
         }
 
         #display {
@@ -76,18 +76,18 @@
 
         /* કીપેડ */
         .buttons {
-            flex: 4; /* બટનો માટે વધારે જગ્યા રાખી */
+            flex: 4;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px; /* બટનો વચ્ચેની જગ્યા ઘટાડી */
+            gap: 8px;
         }
 
         button {
             width: 100%;
             height: 100%;
-            font-size: 1.6rem; /* ફોન્ટ સહેજ નાના કર્યા */
+            font-size: 1.6rem;
             border: none;
-            border-radius: 15px; /* બટન થોડા ચોરસ કર્યા જેથી જગ્યા બચે */
+            border-radius: 15px;
             cursor: pointer;
             background-color: #333333;
             color: white;
@@ -97,7 +97,13 @@
         
         button.operator { background-color: #ff9f0a; color: white; font-size: 1.8rem; }
         button.clear { background-color: #a5a5a5; color: black; font-weight: 500; }
-        button.mic-btn { background-color: #ff3b30; color: white; }
+        
+        /* માઈક બટનનું સ્ટાઇલ */
+        button.mic-btn { background-color: #ff3b30; color: white; transition: 0.3s; }
+        
+        /* જ્યારે ઓફલાઇન હોય ત્યારે માઈક આવું દેખાશે */
+        button.mic-disabled { background-color: #555 !important; color: #888 !important; cursor: not-allowed; }
+
         button.equal { background-color: #30d158; color: white; }
         
         /* History Panel */
@@ -129,14 +135,13 @@
         .hist-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
         .clear-hist { background-color: #333; color: #ff3b30; margin-top: 10px; height: 40px; border-radius: 10px; border: none;}
 
-        /* ક્રેડિટ લાઈન - હવે ઉપર ખેંચી લીધી છે */
         .credit {
             text-align: center;
             padding-top: 8px;
             padding-bottom: 2px;
             color: #666;
             font-size: 0.8rem;
-            flex-shrink: 0; /* આ દબાશે નહીં */
+            flex-shrink: 0;
         }
         .credit a {
             color: #4caf50;
@@ -209,9 +214,30 @@
     const statusMsg = document.getElementById('status-msg');
     const historyPanel = document.getElementById('history-panel');
     const historyList = document.getElementById('history-list');
+    const micBtn = document.getElementById('mic-btn');
     let historyData = [];
 
-    // --- Font Resizing Logic ---
+    // --- Internet Detection ---
+    function checkOnlineStatus() {
+        if (navigator.onLine) {
+            statusMsg.innerText = "Online";
+            statusMsg.style.color = "#4caf50";
+            micBtn.classList.remove("mic-disabled");
+            micBtn.innerText = "🎤";
+        } else {
+            statusMsg.innerText = "No Internet (Mic Off)";
+            statusMsg.style.color = "#ff3b30";
+            micBtn.classList.add("mic-disabled");
+            micBtn.innerText = "🚫";
+        }
+    }
+
+    // જ્યારે નેટ આવે કે જાય ત્યારે ઓટોમેટિક અપડેટ થશે
+    window.addEventListener('online', checkOnlineStatus);
+    window.addEventListener('offline', checkOnlineStatus);
+    checkOnlineStatus(); // શરૂઆતમાં ચેક કરો
+
+    // --- Font Resizing ---
     function adjustFontSize() {
         const len = display.value.length;
         if (len > 18) display.style.fontSize = "1.8rem";
@@ -225,11 +251,7 @@
         historyPanel.style.display = 'flex';
         renderHistory();
     }
-
-    function closeHistory() {
-        historyPanel.style.display = 'none';
-    }
-
+    function closeHistory() { historyPanel.style.display = 'none'; }
     function renderHistory() {
         if(historyData.length === 0) {
             historyList.innerHTML = '<div style="text-align: center; color: #555; margin-top: 20px;">No history yet</div>';
@@ -243,7 +265,6 @@
             historyList.prepend(div); 
         });
     }
-
     function clearHistoryData() {
         historyData = [];
         renderHistory();
@@ -255,40 +276,36 @@
         display.value += num;
         adjustFontSize();
     }
-
     function clearDisplay() {
         display.value = "";
         display.placeholder = "0";
         adjustFontSize();
     }
-
     function deleteLast() {
         display.value = display.value.toString().slice(0, -1);
         if(display.value === "") display.placeholder = "0";
         adjustFontSize();
     }
-
     function calculate() {
         try {
             if(display.value === "") return;
             let expression = display.value;
             let result = eval(expression);
+            if (!Number.isInteger(result)) result = parseFloat(result.toFixed(4));
             
-            if (!Number.isInteger(result)) {
-                result = parseFloat(result.toFixed(4));
-            }
-
             historyData.push({ expr: expression, res: result });
             display.value = result;
-            
             adjustFontSize();
+            
+            // જો ઓફલાઇન હોય તો બોલવાનો પ્રયત્ન કરશે, 
+            // પણ જો અવાજની ફાઈલ નહીં હોય તો નહીં બોલે.
             speak(result);
         } catch (error) {
             display.value = "Error";
         }
     }
 
-    // --- Voice Logic ---
+    // --- Voice Input (Only Works Online) ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -296,9 +313,8 @@
         recognition = new SpeechRecognition();
         recognition.lang = 'gu-IN'; 
         recognition.continuous = false;
-
         recognition.onstart = () => { statusMsg.innerText = "Listening..."; };
-        recognition.onend = () => { statusMsg.innerText = ""; };
+        recognition.onend = () => { checkOnlineStatus(); }; // પાછું સ્ટેટસ બતાવો
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript.toLowerCase();
             processVoice(transcript);
@@ -306,6 +322,10 @@
     }
 
     function startListening() {
+        if (!navigator.onLine) {
+            alert("માઈક વાપરવા માટે ઇન્ટરનેટ જરૂરી છે.");
+            return;
+        }
         if (recognition) recognition.start();
         else alert("Use Chrome for Voice.");
     }
@@ -320,11 +340,9 @@
             'એક':'1', 'બે':'2', 'ત્રણ':'3', 'ચાર':'4', 'પાંચ':'5', 
             'છ':'6', 'સાત':'7', 'આઠ':'8', 'નવ':'9', 'શૂન્ય':'0'
         };
-
         for (let key in mapObj) {
             cleanText = cleanText.replace(new RegExp(key, "g"), mapObj[key]);
         }
-
         const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
         if(mathChars.length > 0) {
             display.value = mathChars;
@@ -333,11 +351,13 @@
         }
     }
 
+    // --- Speech Output ---
     function speak(text) {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'gu-IN';
+            // ઓફલાઇન હોય તો પણ હિન્દી અવાજ (જે ફોનમાં સ્ટોર હોય) ટ્રાય કરશે
             utterance.onerror = () => {
                  utterance.lang = 'hi-IN';
                  window.speechSynthesis.speak(utterance);
