@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Auto-Resize Calculator</title>
+    <title>Perfect Fit Calculator</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #000000;
             font-family: 'Segoe UI', sans-serif;
-            height: 100vh;
+            /* dvh એટલે Dynamic Height - મોબાઈલ માટે ખાસ */
+            height: 100dvh; 
+            width: 100vw;
             display: flex;
             justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
 
@@ -22,20 +25,20 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: 15px;
+            padding: 10px; /* પેડિંગ થોડું ઘટાડ્યું */
             box-sizing: border-box;
             position: relative;
         }
 
         /* ડિસ્પ્લે એરિયા */
         #display-container {
-            flex: 1.2;
+            flex: 1; /* આને થોડું નાનું કર્યું */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             border-bottom: 1px solid #333;
-            padding-bottom: 10px;
+            padding-bottom: 5px;
         }
 
         .top-bar {
@@ -48,14 +51,14 @@
             background: none;
             border: none;
             color: #ff9f0a;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             padding: 5px;
         }
 
         #status-msg {
             color: #4caf50;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         #display {
@@ -63,36 +66,36 @@
             background-color: transparent;
             border: none;
             color: white;
-            font-size: 4.5rem; /* ડિફોલ્ટ મોટી સાઈઝ */
+            font-size: 4rem; 
             text-align: right;
             padding: 0;
             margin: 0;
             font-weight: 300;
-            transition: font-size 0.2s; /* સાઈઝ બદલાય ત્યારે સ્મૂધ લાગે */
+            transition: font-size 0.2s;
         }
 
         /* કીપેડ */
         .buttons {
-            flex: 3;
+            flex: 4; /* બટનો માટે વધારે જગ્યા રાખી */
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 8px; /* બટનો વચ્ચેની જગ્યા ઘટાડી */
         }
 
         button {
             width: 100%;
             height: 100%;
-            font-size: 1.8rem;
+            font-size: 1.6rem; /* ફોન્ટ સહેજ નાના કર્યા */
             border: none;
-            border-radius: 50px;
+            border-radius: 15px; /* બટન થોડા ચોરસ કર્યા જેથી જગ્યા બચે */
             cursor: pointer;
             background-color: #333333;
             color: white;
             transition: transform 0.1s;
         }
-        button:active { transform: scale(0.90); background-color: #555; }
+        button:active { transform: scale(0.95); background-color: #555; }
         
-        button.operator { background-color: #ff9f0a; color: white; font-size: 2rem; }
+        button.operator { background-color: #ff9f0a; color: white; font-size: 1.8rem; }
         button.clear { background-color: #a5a5a5; color: black; font-weight: 500; }
         button.mic-btn { background-color: #ff3b30; color: white; }
         button.equal { background-color: #30d158; color: white; }
@@ -120,48 +123,28 @@
             padding-bottom: 15px;
             margin-bottom: 10px;
         }
+        .hist-header h2 { margin: 0; color: white; }
+        .close-btn { background: none; color: #ff3b30; font-size: 1.5rem; border: none; }
+        #history-list { flex: 1; overflow-y: auto; color: #ccc; }
+        .hist-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
+        .clear-hist { background-color: #333; color: #ff3b30; margin-top: 10px; height: 40px; border-radius: 10px; border: none;}
 
-        .hist-header h2 { margin: 0; color: white; font-size: 1.5rem; }
-        .close-btn { background: none; color: #ff3b30; font-size: 1.5rem; }
-
-        #history-list {
-            flex: 1;
-            overflow-y: auto;
-            color: #ccc;
-        }
-
-        .hist-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid #222;
-            font-size: 1.2rem;
-        }
-        .hist-item span:last-child { color: #4caf50; font-weight: bold; }
-
-        .clear-hist {
-            background-color: #333;
-            color: #ff3b30;
-            margin-top: 10px;
-            height: 50px;
-            font-size: 1rem;
-            border-radius: 10px;
-        }
-
+        /* ક્રેડિટ લાઈન - હવે ઉપર ખેંચી લીધી છે */
         .credit {
             text-align: center;
-            padding-top: 15px;
-            padding-bottom: 5px;
+            padding-top: 8px;
+            padding-bottom: 2px;
             color: #666;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            flex-shrink: 0; /* આ દબાશે નહીં */
         }
         .credit a {
             color: #4caf50;
             text-decoration: none;
             font-weight: bold;
             display: block;
-            margin-top: 5px;
-            font-size: 1rem;
+            margin-top: 2px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -198,7 +181,7 @@
         <button onclick="insert('3')">3</button>
         <button class="operator" onclick="insert('+')">+</button>
         
-        <button style="grid-column: span 2; border-radius: 40px; text-align: left; padding-left: 35px;" onclick="insert('0')">0</button>
+        <button style="grid-column: span 2; border-radius: 15px; text-align: left; padding-left: 25px;" onclick="insert('0')">0</button>
         <button onclick="insert('.')">.</button>
         <button class="equal" onclick="calculate()">=</button>
     </div>
@@ -231,17 +214,10 @@
     // --- Font Resizing Logic ---
     function adjustFontSize() {
         const len = display.value.length;
-        
-        // જેમ લંબાઈ વધે તેમ ફોન્ટ સાઈઝ ઘટે
-        if (len > 18) {
-            display.style.fontSize = "1.8rem";
-        } else if (len > 13) {
-            display.style.fontSize = "2.5rem";
-        } else if (len > 9) {
-            display.style.fontSize = "3.2rem";
-        } else {
-            display.style.fontSize = "4.5rem"; // Original Size
-        }
+        if (len > 18) display.style.fontSize = "1.8rem";
+        else if (len > 13) display.style.fontSize = "2.5rem";
+        else if (len > 9) display.style.fontSize = "3.2rem";
+        else display.style.fontSize = "4rem";
     }
 
     // --- History Functions ---
@@ -277,19 +253,19 @@
     function insert(num) {
         if(display.value === "0" && num !== ".") display.value = "";
         display.value += num;
-        adjustFontSize(); // Resize font
+        adjustFontSize();
     }
 
     function clearDisplay() {
         display.value = "";
         display.placeholder = "0";
-        adjustFontSize(); // Reset font size
+        adjustFontSize();
     }
 
     function deleteLast() {
         display.value = display.value.toString().slice(0, -1);
         if(display.value === "") display.placeholder = "0";
-        adjustFontSize(); // Resize font
+        adjustFontSize();
     }
 
     function calculate() {
@@ -305,7 +281,7 @@
             historyData.push({ expr: expression, res: result });
             display.value = result;
             
-            adjustFontSize(); // Resize font for result
+            adjustFontSize();
             speak(result);
         } catch (error) {
             display.value = "Error";
@@ -331,7 +307,7 @@
 
     function startListening() {
         if (recognition) recognition.start();
-        else alert("Voice input needs Chrome browser.");
+        else alert("Use Chrome for Voice.");
     }
 
     function processVoice(text) {
@@ -352,7 +328,7 @@
         const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
         if(mathChars.length > 0) {
             display.value = mathChars;
-            adjustFontSize(); // Resize font for voice input
+            adjustFontSize();
             setTimeout(calculate, 1000);
         }
     }
