@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimate Calculator</title>
+    <title>Auto-Resize Calculator</title>
     <style>
         body {
             margin: 0;
@@ -32,7 +32,7 @@
             flex: 1.2;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* હિસ્ટ્રી બટન અને અંકો વચ્ચે જગ્યા */
+            justify-content: space-between;
             margin-bottom: 20px;
             border-bottom: 1px solid #333;
             padding-bottom: 10px;
@@ -44,7 +44,6 @@
             align-items: center;
         }
 
-        /* હિસ્ટ્રી બટન */
         .hist-btn {
             background: none;
             border: none;
@@ -64,11 +63,12 @@
             background-color: transparent;
             border: none;
             color: white;
-            font-size: 4rem;
+            font-size: 4.5rem; /* ડિફોલ્ટ મોટી સાઈઝ */
             text-align: right;
             padding: 0;
             margin: 0;
             font-weight: 300;
+            transition: font-size 0.2s; /* સાઈઝ બદલાય ત્યારે સ્મૂધ લાગે */
         }
 
         /* કીપેડ */
@@ -97,7 +97,7 @@
         button.mic-btn { background-color: #ff3b30; color: white; }
         button.equal { background-color: #30d158; color: white; }
         
-        /* હિસ્ટ્રી પેનલ (ઓવરલે) */
+        /* History Panel */
         #history-panel {
             position: absolute;
             top: 0;
@@ -106,7 +106,7 @@
             height: 100%;
             background-color: #111;
             z-index: 10;
-            display: none; /* શરૂઆતમાં બંધ રહેશે */
+            display: none;
             flex-direction: column;
             padding: 20px;
             box-sizing: border-box;
@@ -122,7 +122,7 @@
         }
 
         .hist-header h2 { margin: 0; color: white; font-size: 1.5rem; }
-        .close-btn { background: none; color: #ff3b30; font-size: 1.5rem; width: auto; height: auto; }
+        .close-btn { background: none; color: #ff3b30; font-size: 1.5rem; }
 
         #history-list {
             flex: 1;
@@ -228,6 +228,22 @@
     const historyList = document.getElementById('history-list');
     let historyData = [];
 
+    // --- Font Resizing Logic ---
+    function adjustFontSize() {
+        const len = display.value.length;
+        
+        // જેમ લંબાઈ વધે તેમ ફોન્ટ સાઈઝ ઘટે
+        if (len > 18) {
+            display.style.fontSize = "1.8rem";
+        } else if (len > 13) {
+            display.style.fontSize = "2.5rem";
+        } else if (len > 9) {
+            display.style.fontSize = "3.2rem";
+        } else {
+            display.style.fontSize = "4.5rem"; // Original Size
+        }
+    }
+
     // --- History Functions ---
     function openHistory() {
         historyPanel.style.display = 'flex';
@@ -248,7 +264,7 @@
             const div = document.createElement('div');
             div.className = 'hist-item';
             div.innerHTML = `<span>${item.expr}</span> <span>= ${item.res}</span>`;
-            historyList.prepend(div); // Newest first
+            historyList.prepend(div); 
         });
     }
 
@@ -261,16 +277,19 @@
     function insert(num) {
         if(display.value === "0" && num !== ".") display.value = "";
         display.value += num;
+        adjustFontSize(); // Resize font
     }
 
     function clearDisplay() {
         display.value = "";
         display.placeholder = "0";
+        adjustFontSize(); // Reset font size
     }
 
     function deleteLast() {
         display.value = display.value.toString().slice(0, -1);
         if(display.value === "") display.placeholder = "0";
+        adjustFontSize(); // Resize font
     }
 
     function calculate() {
@@ -283,18 +302,17 @@
                 result = parseFloat(result.toFixed(4));
             }
 
-            // હિસ્ટ્રીમાં ઉમેરો
             historyData.push({ expr: expression, res: result });
-
             display.value = result;
             
+            adjustFontSize(); // Resize font for result
             speak(result);
         } catch (error) {
             display.value = "Error";
         }
     }
 
-    // --- Voice Logic (Mic) ---
+    // --- Voice Logic ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
 
@@ -318,8 +336,6 @@
 
     function processVoice(text) {
         let cleanText = text;
-        
-        // Replacements for Gujarati
         const mapObj = {
             'વત્તા':'+', 'plus':'+', 'સરવાળો':'+',
             'ઓછા':'-', 'minus':'-', 'બાદ':'-',
@@ -336,18 +352,18 @@
         const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
         if(mathChars.length > 0) {
             display.value = mathChars;
+            adjustFontSize(); // Resize font for voice input
             setTimeout(calculate, 1000);
         }
     }
 
-    // --- Speech Output ---
     function speak(text) {
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'gu-IN';
             utterance.onerror = () => {
-                 utterance.lang = 'hi-IN'; // Fallback
+                 utterance.lang = 'hi-IN';
                  window.speechSynthesis.speak(utterance);
             };
             window.speechSynthesis.speak(utterance);
