@@ -305,51 +305,114 @@
         }
     }
 
-    // --- Voice Input (Only Works Online) ---
+        // --- Voice Input (Continuous Mode) ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
+    let isMicOn = false; // માઈક ચાલુ છે કે બંધ તે ચેક કરવા માટે
 
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'gu-IN'; 
-        recognition.continuous = false;
-        recognition.onstart = () => { statusMsg.innerText = "Listening..."; };
-        recognition.onend = () => { checkOnlineStatus(); }; // પાછું સ્ટેટસ બતાવો
+        
+        // ફેરફાર 1: continuous true કર્યું જેથી માઈક ચાલુ રહે
+        recognition.continuous = true; 
+        recognition.interimResults = false; // ફાઈનલ રિઝલ્ટ જ લેશે
+
+        recognition.onstart = () => { 
+            statusMsg.innerText = "Listening (Always On)..."; 
+            micBtn.style.backgroundColor = "#30d158"; // લીલો કલર (ચાલુ)
+            micBtn.classList.add("listening-mode");
+        };
+
+        recognition.onend = () => { 
+            // ફેરફાર 2: જો આપણે જાતે બંધ નથી કર્યું, તો તે ફરીથી આપમેળે શરૂ થશે
+            if (isMicOn && navigator.onLine) {
+                recognition.start(); 
+            } else {
+                statusMsg.innerText = navigator.onLine ? "Online" : "Offline";
+                micBtn.style.backgroundColor = "#ff3b30"; // લાલ કલર (બંધ)
+                micBtn.classList.remove("listening-mode");
+                isMicOn = false;
+            }
+        };
+
         recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript.toLowerCase();
+            // છેલ્લું જે વાક્ય બોલાયું હોય તે લેશે
+            const lastIndex = event.results.length - 1;
+            const transcript = event.results[lastIndex][0].transcript.toLowerCase();
             processVoice(transcript);
+        };
+        
+        recognition.onerror = (event) => {
+            console.log("Voice Error:", event.error);
+            // જો કઈ એરર આવે તો પણ ફરીથી ટ્રાય કરશે (જો ચાલુ હોય તો)
+            if(event.error === 'no-speech' && isMicOn) {
+                // Ignore silence errors
+            } else {
+                // અન્ય એરર હોય તો થોડી વાર રોકાઈને ચાલુ થશે
+            }
         };
     }
 
+    // ફેરફાર 3: બટન દબાવવાથી હવે ON/OFF થશે (Toggle)
     function startListening() {
         if (!navigator.onLine) {
             alert("માઈક વાપરવા માટે ઇન્ટરનેટ જરૂરી છે.");
             return;
         }
-        if (recognition) recognition.start();
-        else alert("Use Chrome for Voice.");
+
+        if (!recognition) {
+            alert("તમારા બ્રાઉઝરમાં વોઈસ ફીચર નથી.");
+            return;
+        }
+
+        if (isMicOn) {
+            // જો ચાલુ હોય તો બંધ કરો
+            isMicOn = false;
+            recognition.stop();
+            micBtn.innerText = "🎤";
+        } else {
+            // જો બંધ હોય તો ચાલુ કરો
+            isMicOn = true;
+            recognition.start();
+            micBtn.innerText = "⏹️"; // Stop icon
+        }
     }
 
     function processVoice(text) {
         let cleanText = text;
         const mapObj = {
-            'વત્તા':'+', 'plus':'+', 'સરવાળો':'+',
+            'વત્તા':'+', 'plus':'+', 'સરવાળો':'+', 'ઉમેરો': '+',
             'ઓછા':'-', 'minus':'-', 'બાદ':'-',
             'ગુણ્યા':'*', 'into':'*', 'x':'*',
-            'ભાગ્યા':'/', 'divided':'/',
+            'ભાગ્યા':'/', 'divided':'/', 'ભાગાકાર':'/',
             'એક':'1', 'બે':'2', 'ત્રણ':'3', 'ચાર':'4', 'પાંચ':'5', 
             'છ':'6', 'સાત':'7', 'આઠ':'8', 'નવ':'9', 'શૂન્ય':'0'
         };
         for (let key in mapObj) {
             cleanText = cleanText.replace(new RegExp(key, "g"), mapObj[key]);
         }
+        
+        // અવાજમાં 'ક્લિયર' બોલે તો સ્ક્રીન સાફ થાય
+        if (cleanText.includes("clear") || cleanText.includes("સાફ")) {
+            clearDisplay();
+            return;
+        }
+
         const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
+        
         if(mathChars.length > 0) {
             display.value = mathChars;
             adjustFontSize();
-            setTimeout(calculate, 1000);
+            
+            // 1 સેકન્ડ પછી રિઝલ્ટ આવશે, પણ માઈક બંધ નહિ થાય
+            setTimeout(() => {
+                calculate();
+                // બોલ્યા પછી રિઝલ્ટ બોલશે (Speak function જૂનું જ રહેશે)
+            }, 1000);
         }
     }
+
 
     // --- Speech Output ---
     function speak(text) {
