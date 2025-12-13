@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Voice Calculator (Continuous)</title>
+    <title>Offline Ready Calculator</title>
     <style>
         body {
             margin: 0;
@@ -16,7 +16,6 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            -webkit-tap-highlight-color: transparent; /* Mobile tap color remove */
         }
 
         .calculator {
@@ -93,7 +92,6 @@
             background-color: #333333;
             color: white;
             transition: transform 0.1s;
-            user-select: none;
         }
         button:active { transform: scale(0.95); background-color: #555; }
         
@@ -103,24 +101,11 @@
         /* માઈક બટનનું સ્ટાઇલ */
         button.mic-btn { background-color: #ff3b30; color: white; transition: 0.3s; }
         
-        /* જ્યારે માઈક ચાલુ હોય (Listening Mode) */
-        button.mic-active { 
-            background-color: #30d158 !important; 
-            animation: pulse 1.5s infinite;
-        }
-        
-        /* જ્યારે ઓફલાઇન હોય ત્યારે માઈક */
+        /* જ્યારે ઓફલાઇન હોય ત્યારે માઈક આવું દેખાશે */
         button.mic-disabled { background-color: #555 !important; color: #888 !important; cursor: not-allowed; }
 
         button.equal { background-color: #30d158; color: white; }
         
-        /* Pulse Animation for Mic */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(48, 209, 88, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
-        }
-
         /* History Panel */
         #history-panel {
             position: absolute;
@@ -183,7 +168,7 @@
     <div class="buttons">
         <button class="clear" onclick="clearDisplay()">AC</button>
         <button class="clear" onclick="deleteLast()">⌫</button>
-        <button class="mic-btn" onclick="toggleMic()" id="mic-btn">🎤</button>
+        <button class="mic-btn" onclick="startListening()" id="mic-btn">🎤</button>
         <button class="operator" onclick="insert('/')">÷</button>
         
         <button onclick="insert('7')">7</button>
@@ -235,25 +220,22 @@
     // --- Internet Detection ---
     function checkOnlineStatus() {
         if (navigator.onLine) {
-            if(!isMicOn) {
-                statusMsg.innerText = "Online";
-                statusMsg.style.color = "#4caf50";
-            }
+            statusMsg.innerText = "Online";
+            statusMsg.style.color = "#4caf50";
             micBtn.classList.remove("mic-disabled");
-            if(!isMicOn) micBtn.innerText = "🎤";
+            micBtn.innerText = "🎤";
         } else {
             statusMsg.innerText = "No Internet (Mic Off)";
             statusMsg.style.color = "#ff3b30";
             micBtn.classList.add("mic-disabled");
             micBtn.innerText = "🚫";
-            // જો નેટ જાય તો માઈક બંધ કરવું
-            if(isMicOn) toggleMic(); 
         }
     }
 
+    // જ્યારે નેટ આવે કે જાય ત્યારે ઓટોમેટિક અપડેટ થશે
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
-    checkOnlineStatus(); 
+    checkOnlineStatus(); // શરૂઆતમાં ચેક કરો
 
     // --- Font Resizing ---
     function adjustFontSize() {
@@ -308,7 +290,6 @@
         try {
             if(display.value === "") return;
             let expression = display.value;
-            // સુરક્ષા માટે eval ને બદલે Function વાપરવું વધુ સારું પણ હાલ સરળતા માટે eval
             let result = eval(expression);
             if (!Number.isInteger(result)) result = parseFloat(result.toFixed(4));
             
@@ -316,128 +297,67 @@
             display.value = result;
             adjustFontSize();
             
+            // જો ઓફલાઇન હોય તો બોલવાનો પ્રયત્ન કરશે, 
+            // પણ જો અવાજની ફાઈલ નહીં હોય તો નહીં બોલે.
             speak(result);
         } catch (error) {
             display.value = "Error";
-            setTimeout(clearDisplay, 1500);
         }
     }
 
-    // --- CONTINUOUS VOICE INPUT LOGIC ---
+    // --- Voice Input (Only Works Online) ---
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
-    let isMicOn = false;
 
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.lang = 'gu-IN'; 
-        recognition.continuous = true; // સતત ચાલુ રહેશે
-        recognition.interimResults = false;
-
-        recognition.onstart = () => { 
-            statusMsg.innerText = "Listening..."; 
-            statusMsg.style.color = "#30d158";
-            micBtn.classList.add("mic-active");
-            micBtn.innerText = "⏹️"; // Stop Icon
-        };
-
-        recognition.onend = () => { 
-            // જો યુઝરે બંધ નથી કર્યું તો ફરી ચાલુ કરો (Auto Restart)
-            if (isMicOn && navigator.onLine) {
-                try { recognition.start(); } catch(e) {}
-            } else {
-                // ખરેખર બંધ થયું
-                statusMsg.innerText = "Online";
-                statusMsg.style.color = "#4caf50";
-                micBtn.classList.remove("mic-active");
-                micBtn.innerText = "🎤";
-                isMicOn = false;
-            }
-        };
-
+        recognition.continuous = false;
+        recognition.onstart = () => { statusMsg.innerText = "Listening..."; };
+        recognition.onend = () => { checkOnlineStatus(); }; // પાછું સ્ટેટસ બતાવો
         recognition.onresult = (event) => {
-            const lastIndex = event.results.length - 1;
-            const transcript = event.results[lastIndex][0].transcript.toLowerCase();
+            const transcript = event.results[0][0].transcript.toLowerCase();
             processVoice(transcript);
-        };
-        
-        recognition.onerror = (event) => {
-            console.log("Error:", event.error);
-            if(event.error === 'no-speech') { /* Ignore silence */ }
         };
     }
 
-    function toggleMic() {
+    function startListening() {
         if (!navigator.onLine) {
-            alert("ઇન્ટરનેટ કનેક્શન નથી.");
+            alert("માઈક વાપરવા માટે ઇન્ટરનેટ જરૂરી છે.");
             return;
         }
-        if (!recognition) {
-            alert("આ બ્રાઉઝરમાં વોઈસ સપોર્ટ નથી.");
-            return;
-        }
-
-        if (isMicOn) {
-            // Stop Listening
-            isMicOn = false;
-            recognition.stop();
-        } else {
-            // Start Listening
-            isMicOn = true;
-            recognition.start();
-        }
+        if (recognition) recognition.start();
+        else alert("Use Chrome for Voice.");
     }
 
     function processVoice(text) {
         let cleanText = text;
-        
-        // ક્લિયર કમાન્ડ
-        if (cleanText.includes("clear") || cleanText.includes("સાફ") || cleanText.includes("ભૂંસી")) {
-            clearDisplay();
-            return;
-        }
-
         const mapObj = {
-            'વત્તા':'+', 'plus':'+', 'સરવાળો':'+', 'ઉમેરો': '+',
+            'વત્તા':'+', 'plus':'+', 'સરવાળો':'+',
             'ઓછા':'-', 'minus':'-', 'બાદ':'-',
-            'ગુણ્યા':'*', 'into':'*', 'x':'*', 'મલ્ટીપ્લાય':'*',
-            'ભાગ્યા':'/', 'divided':'/', 'ભાગાકાર':'/', 'ડિવાઇડ':'/',
+            'ગુણ્યા':'*', 'into':'*', 'x':'*',
+            'ભાગ્યા':'/', 'divided':'/',
             'એક':'1', 'બે':'2', 'ત્રણ':'3', 'ચાર':'4', 'પાંચ':'5', 
-            'છ':'6', 'સાત':'7', 'આઠ':'8', 'નવ':'9', 'શૂન્ય':'0', 'ઝીરો':'0'
+            'છ':'6', 'સાત':'7', 'આઠ':'8', 'નવ':'9', 'શૂન્ય':'0'
         };
-        
         for (let key in mapObj) {
             cleanText = cleanText.replace(new RegExp(key, "g"), mapObj[key]);
         }
-        
         const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
-        
         if(mathChars.length > 0) {
-            // જો અગાઉ કોઈ આંકડો હોય અને નવું ઇનપુટ નિશાની (+,-,*,/) થી શરૂ થાય તો જોઈન્ટ કરો
-            if (display.value !== "" && display.value !== "0" && ['+','-','*','/'].includes(mathChars[0])) {
-                 display.value += mathChars;
-            } else {
-                 // નહિતર નવેસરથી લખો
-                 display.value = mathChars;
-            }
-            
+            display.value = mathChars;
             adjustFontSize();
-            
-            // 1 સેકન્ડ પછી ઓટોમેટિક કેલ્ક્યુલેટ થશે
-            setTimeout(() => {
-                // હજુ પણ જો કંઇક લખેલું હોય તો જ ગણતરી કરો
-                if(display.value.length > 0) calculate();
-            }, 1200);
+            setTimeout(calculate, 1000);
         }
     }
 
     // --- Speech Output ---
     function speak(text) {
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // જૂનું બોલવાનું અટકાવો
+            window.speechSynthesis.cancel();
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'gu-IN';
-            utterance.rate = 1; // ઝડપ
+            // ઓફલાઇન હોય તો પણ હિન્દી અવાજ (જે ફોનમાં સ્ટોર હોય) ટ્રાય કરશે
             utterance.onerror = () => {
                  utterance.lang = 'hi-IN';
                  window.speechSynthesis.speak(utterance);
