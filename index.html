@@ -96,7 +96,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
         
         .calc-btn {
@@ -210,13 +210,6 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-        
-        .voice-examples {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            line-height: 1.4;
         }
         
         /* ઇતિહાસ */
@@ -395,10 +388,6 @@
             <div class="mic-status" id="statusText">
                 માઇક બટન દબાવો
             </div>
-            
-            <div class="voice-examples">
-                જેમ કે: "100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ"
-            </div>
         </div>
         
         <!-- ઇતિહાસ -->
@@ -461,7 +450,7 @@
                 shouldResetScreen = false;
             } else {
                 if (value === '.' && currentInput.includes('.')) {
-                    return; // ડુપ્લિકેટ ડેસિમલ પોઈન્ટ ના આવે
+                    return;
                 }
                 currentInput += value;
             }
@@ -786,7 +775,7 @@
             
             const principal = parseFloat(numbers[0]);
             const rate = parseFloat(numbers[1]);
-            let time = 1; // ડિફોલ્ટ 1 વર્ષ
+            let time = 1;
             
             // સમય એક્સટ્રેક્ટ કરો
             const timeMatch = command.match(/(\d+)\s*વર્ષ|(\d+)\s*સાલ|(\d+)\s*year/i);
