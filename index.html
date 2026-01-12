@@ -2,433 +2,604 @@
 <html lang="gu">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Offline Ready Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>વૉઇસ કેલ્ક્યુલેટર - ગુજરાતી</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background-color: #000000;
-            font-family: 'Segoe UI', sans-serif;
-            height: 100dvh; 
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Nirmala UI', 'Shruti', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a237e, #4a148c);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
         }
-
-        .calculator {
-            width: 100%;
-            max-width: 450px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-sizing: border-box;
-            position: relative;
-        }
-
-        /* ડિસ્પ્લે એરિયા */
-        #display-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .hist-btn {
-            background: none;
-            border: none;
-            color: #ff9f0a;
-            font-size: 1.1rem;
-            cursor: pointer;
-            padding: 5px;
-        }
-
-        #status-msg {
-            color: #4caf50;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        #display {
-            width: 100%;
-            background-color: transparent;
-            border: none;
+        
+        header {
+            background: linear-gradient(to right, #0d47a1, #311b92);
             color: white;
-            font-size: 4rem; 
-            text-align: right;
-            padding: 0;
-            margin: 0;
-            font-weight: 300;
-            transition: font-size 0.2s;
-        }
-
-        /* કીપેડ */
-        .buttons {
-            flex: 4;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-        }
-
-        button {
-            width: 100%;
-            height: 100%;
-            font-size: 1.6rem;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            background-color: #333333;
-            color: white;
-            transition: transform 0.1s;
-        }
-        button:active { transform: scale(0.95); background-color: #555; }
-        
-        button.operator { background-color: #ff9f0a; color: white; font-size: 1.8rem; }
-        button.clear { background-color: #a5a5a5; color: black; font-weight: 500; }
-        
-        /* માઈક બટનનું સ્ટાઇલ */
-        button.mic-btn { background-color: #ff3b30; color: white; transition: 0.3s; }
-        
-        /* જ્યારે ઓફલાઇન હોય ત્યારે માઈક આવું દેખાશે */
-        button.mic-disabled { background-color: #555 !important; color: #888 !important; cursor: not-allowed; }
-
-        button.equal { background-color: #30d158; color: white; }
-        
-        /* History Panel */
-        #history-panel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #111;
-            z-index: 10;
-            display: none;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .hist-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 10px;
-        }
-        .hist-header h2 { margin: 0; color: white; }
-        .close-btn { background: none; color: #ff3b30; font-size: 1.5rem; border: none; }
-        #history-list { flex: 1; overflow-y: auto; color: #ccc; }
-        .hist-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; }
-        .clear-hist { background-color: #333; color: #ff3b30; margin-top: 10px; height: 40px; border-radius: 10px; border: none;}
-
-        .credit {
+            padding: 25px 30px;
             text-align: center;
-            padding-top: 8px;
-            padding-bottom: 2px;
-            color: #666;
-            font-size: 0.8rem;
-            flex-shrink: 0;
         }
-        .credit a {
-            color: #4caf50;
-            text-decoration: none;
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .calculator-display {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid #e0e0e0;
+            min-height: 150px;
+        }
+        
+        .question-display {
+            font-size: 1.4rem;
+            color: #0d47a1;
+            margin-bottom: 15px;
+            min-height: 50px;
+            padding: 10px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+        
+        .answer-display {
+            font-size: 2.2rem;
+            color: #1b5e20;
             font-weight: bold;
-            display: block;
-            margin-top: 2px;
+            text-align: center;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .voice-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .mic-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #f44336, #d32f2f);
+            border: none;
+            color: white;
+            font-size: 2.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+        
+        .mic-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(244, 67, 54, 0.6);
+        }
+        
+        .mic-btn.listening {
+            background: linear-gradient(to bottom, #4caf50, #388e3c);
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-text {
+            font-size: 1.4rem;
+            color: #555;
+            text-align: center;
+            min-height: 30px;
+        }
+        
+        .examples {
+            background: #f1f8e9;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .examples h3 {
+            color: #33691e;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .example-list {
+            list-style-type: none;
+        }
+        
+        .example-list li {
+            background: white;
+            margin-bottom: 10px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 5px solid #4caf50;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .example-list li:hover {
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+        
+        .history {
+            margin-top: 30px;
+            background: #fff8e1;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .history h3 {
+            color: #ff6f00;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid #ffe0b2;
+            font-size: 1.1rem;
+        }
+        
+        .history-item .time {
             font-size: 0.9rem;
+            color: #777;
+            float: right;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            background: #f5f5f5;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .answer-display {
+                font-size: 1.8rem;
+            }
+            
+            .mic-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-
-<div class="calculator">
-    
-    <div id="display-container">
-        <div class="top-bar">
-            <button class="hist-btn" onclick="openHistory()">🕒 History</button>
-            <div id="status-msg"></div>
+    <div class="container">
+        <header>
+            <h1>🔊 વૉઇસ કેલ્ક્યુલેટર</h1>
+            <div class="subtitle">બોલો, સાંભળો, ગણતરી કરો - ગુજરાતીમાં</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="calculator-display">
+                <div class="question-display" id="questionDisplay">
+                    તમારો પ્રશ્ન અહીં દેખાશે...
+                </div>
+                <div class="answer-display" id="answerDisplay">
+                    જવાબ અહીં દેખાશે...
+                </div>
+            </div>
+            
+            <div class="voice-controls">
+                <button class="mic-btn" id="micButton">
+                    🎤
+                </button>
+                <div class="status-text" id="statusText">
+                    માઇકને સક્રિય કરવા માટે બટન દબાવો
+                </div>
+            </div>
+            
+            <div class="examples">
+                <h3>📋 ઉદાહરણ પ્રશ્નો (ક્લિક કરો):</h3>
+                <ul class="example-list" id="exampleList">
+                    <li onclick="speakExample(this)">100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ કેટલું થાય?</li>
+                    <li onclick="speakExample(this)">5000 માંથી 25 ટકા બાદ કરો</li>
+                    <li onclick="speakExample(this)">1500 અને 2300 નો ગુણાકાર કરો</li>
+                    <li onclick="speakExample(this)">9999 અને 8888 નો સરવાળો કરો</li>
+                    <li onclick="speakExample(this)">10000 ના 18 ટકા ગણો</li>
+                </ul>
+            </div>
+            
+            <div class="history">
+                <h3>🕒 ઇતિહાસ:</h3>
+                <div class="history-list" id="historyList">
+                    <!-- ઇતિહાસ અહીં દેખાશે -->
+                </div>
+            </div>
         </div>
-        <input type="text" id="display" readonly placeholder="0">
+        
+        <footer>
+            <p>આ કેલ્ક્યુલેટર વૉઇસ રેકોગ્નિશનનો ઉપયોગ કરે છે. માઇક્રોફોન પરવાનગી આપો.</p>
+            <p>© 2023 ગુજરાતી વૉઇસ કેલ્ક્યુલેટર</p>
+        </footer>
     </div>
 
-    <div class="buttons">
-        <button class="clear" onclick="clearDisplay()">AC</button>
-        <button class="clear" onclick="deleteLast()">⌫</button>
-        <button class="mic-btn" onclick="startListening()" id="mic-btn">🎤</button>
-        <button class="operator" onclick="insert('/')">÷</button>
+    <script>
+        // DOM એલિમેન્ટ્સ
+        const micButton = document.getElementById('micButton');
+        const statusText = document.getElementById('statusText');
+        const questionDisplay = document.getElementById('questionDisplay');
+        const answerDisplay = document.getElementById('answerDisplay');
+        const historyList = document.getElementById('historyList');
         
-        <button onclick="insert('7')">7</button>
-        <button onclick="insert('8')">8</button>
-        <button onclick="insert('9')">9</button>
-        <button class="operator" onclick="insert('*')">×</button>
+        // વૉઇસ રેકોગ્નિશન સેટઅપ
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isListening = false;
         
-        <button onclick="insert('4')">4</button>
-        <button onclick="insert('5')">5</button>
-        <button onclick="insert('6')">6</button>
-        <button class="operator" onclick="insert('-')">−</button>
-        
-        <button onclick="insert('1')">1</button>
-        <button onclick="insert('2')">2</button>
-        <button onclick="insert('3')">3</button>
-        <button class="operator" onclick="insert('+')">+</button>
-        
-        <button style="grid-column: span 2; border-radius: 15px; text-align: left; padding-left: 25px;" onclick="insert('0')">0</button>
-        <button onclick="insert('.')">.</button>
-        <button class="equal" onclick="calculate()">=</button>
-    </div>
-
-    <div class="credit">
-        Developed by Devendra Ramanuj
-        <a href="tel:9276505035">📞 9276505035</a>
-    </div>
-
-    <div id="history-panel">
-        <div class="hist-header">
-            <h2>📜 History</h2>
-            <button class="close-btn" onclick="closeHistory()">✕</button>
-        </div>
-        <div id="history-list">
-            <div style="text-align: center; color: #555; margin-top: 20px;">No history yet</div>
-        </div>
-        <button class="clear-hist" onclick="clearHistoryData()">Clear History</button>
-    </div>
-
-</div>
-
-<script>
-    const display = document.getElementById('display');
-    const statusMsg = document.getElementById('status-msg');
-    const historyPanel = document.getElementById('history-panel');
-    const historyList = document.getElementById('history-list');
-    const micBtn = document.getElementById('mic-btn');
-    let historyData = [];
-
-    // --- Internet Detection ---
-    function checkOnlineStatus() {
-        if (navigator.onLine) {
-            statusMsg.innerText = "Online";
-            statusMsg.style.color = "#4caf50";
-            micBtn.classList.remove("mic-disabled");
-            micBtn.innerText = "🎤";
-        } else {
-            statusMsg.innerText = "No Internet (Mic Off)";
-            statusMsg.style.color = "#ff3b30";
-            micBtn.classList.add("mic-disabled");
-            micBtn.innerText = "🚫";
-        }
-    }
-
-    // જ્યારે નેટ આવે કે જાય ત્યારે ઓટોમેટિક અપડેટ થશે
-    window.addEventListener('online', checkOnlineStatus);
-    window.addEventListener('offline', checkOnlineStatus);
-    checkOnlineStatus(); // શરૂઆતમાં ચેક કરો
-
-    // --- Font Resizing ---
-    function adjustFontSize() {
-        const len = display.value.length;
-        if (len > 18) display.style.fontSize = "1.8rem";
-        else if (len > 13) display.style.fontSize = "2.5rem";
-        else if (len > 9) display.style.fontSize = "3.2rem";
-        else display.style.fontSize = "4rem";
-    }
-
-    // --- History Functions ---
-    function openHistory() {
-        historyPanel.style.display = 'flex';
-        renderHistory();
-    }
-    function closeHistory() { historyPanel.style.display = 'none'; }
-    function renderHistory() {
-        if(historyData.length === 0) {
-            historyList.innerHTML = '<div style="text-align: center; color: #555; margin-top: 20px;">No history yet</div>';
-            return;
-        }
-        historyList.innerHTML = '';
-        historyData.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'hist-item';
-            div.innerHTML = `<span>${item.expr}</span> <span>= ${item.res}</span>`;
-            historyList.prepend(div); 
+        // પેજ લોડ થયે સેટઅપ
+        document.addEventListener('DOMContentLoaded', function() {
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'gu-IN'; // ગુજરાતી ભારત
+                
+                recognition.onstart = function() {
+                    isListening = true;
+                    micButton.classList.add('listening');
+                    statusText.textContent = "સાંભળી રહ્યા છું... તમારો પ્રશ્ન બોલો";
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    processVoiceCommand(transcript);
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error', event.error);
+                    statusText.textContent = "ત્રુટિ: " + event.error;
+                    stopListening();
+                };
+                
+                recognition.onend = function() {
+                    stopListening();
+                };
+            } else {
+                statusText.textContent = "તમારો બ્રાઉઝર વૉઇસ રેકોગ્નિશન સપોર્ટ કરતો નથી";
+                micButton.disabled = true;
+            }
+            
+            // ઇતિહાસ લોડ કરો
+            loadHistory();
         });
-    }
-    function clearHistoryData() {
-        historyData = [];
-        renderHistory();
-    }
-
-    // --- Calculator Logic ---
-    function insert(num) {
-        if(display.value === "0" && num !== ".") display.value = "";
-        display.value += num;
-        adjustFontSize();
-    }
-    function clearDisplay() {
-        display.value = "";
-        display.placeholder = "0";
-        adjustFontSize();
-    }
-    function deleteLast() {
-        display.value = display.value.toString().slice(0, -1);
-        if(display.value === "") display.placeholder = "0";
-        adjustFontSize();
-    }
-    function calculate() {
-        try {
-            if(display.value === "") return;
-            let expression = display.value;
-            let result = eval(expression);
-            if (!Number.isInteger(result)) result = parseFloat(result.toFixed(4));
-            
-            historyData.push({ expr: expression, res: result });
-            display.value = result;
-            adjustFontSize();
-            
-            // જો ઓફલાઇન હોય તો બોલવાનો પ્રયત્ન કરશે, 
-            // પણ જો અવાજની ફાઈલ નહીં હોય તો નહીં બોલે.
-            speak(result);
-        } catch (error) {
-            display.value = "Error";
-        }
-    }
-
-        // --- Voice Input (Continuous Mode) ---
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    let isMicOn = false; // માઈક ચાલુ છે કે બંધ તે ચેક કરવા માટે
-
-    if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.lang = 'gu-IN'; 
         
-        // ફેરફાર 1: continuous true કર્યું જેથી માઈક ચાલુ રહે
-        recognition.continuous = true; 
-        recognition.interimResults = false; // ફાઈનલ રિઝલ્ટ જ લેશે
-
-        recognition.onstart = () => { 
-            statusMsg.innerText = "Listening (Always On)..."; 
-            micBtn.style.backgroundColor = "#30d158"; // લીલો કલર (ચાલુ)
-            micBtn.classList.add("listening-mode");
-        };
-
-        recognition.onend = () => { 
-            // ફેરફાર 2: જો આપણે જાતે બંધ નથી કર્યું, તો તે ફરીથી આપમેળે શરૂ થશે
-            if (isMicOn && navigator.onLine) {
-                recognition.start(); 
+        // માઇક બટન ક્લિક ઇવેન્ટ
+        micButton.addEventListener('click', function() {
+            if (!isListening) {
+                startListening();
             } else {
-                statusMsg.innerText = navigator.onLine ? "Online" : "Offline";
-                micBtn.style.backgroundColor = "#ff3b30"; // લાલ કલર (બંધ)
-                micBtn.classList.remove("listening-mode");
-                isMicOn = false;
+                stopListening();
             }
-        };
-
-        recognition.onresult = (event) => {
-            // છેલ્લું જે વાક્ય બોલાયું હોય તે લેશે
-            const lastIndex = event.results.length - 1;
-            const transcript = event.results[lastIndex][0].transcript.toLowerCase();
-            processVoice(transcript);
-        };
+        });
         
-        recognition.onerror = (event) => {
-            console.log("Voice Error:", event.error);
-            // જો કઈ એરર આવે તો પણ ફરીથી ટ્રાય કરશે (જો ચાલુ હોય તો)
-            if(event.error === 'no-speech' && isMicOn) {
-                // Ignore silence errors
-            } else {
-                // અન્ય એરર હોય તો થોડી વાર રોકાઈને ચાલુ થશે
+        // વૉઇસ સાંભળવું શરૂ કરો
+        function startListening() {
+            if (recognition) {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    statusText.textContent = "માઇક્રોફોન એક્સેસની ત્રુટિ. કૃપા કરીને પરવાનગી તપાસો.";
+                }
             }
-        };
-    }
-
-    // ફેરફાર 3: બટન દબાવવાથી હવે ON/OFF થશે (Toggle)
-    function startListening() {
-        if (!navigator.onLine) {
-            alert("માઈક વાપરવા માટે ઇન્ટરનેટ જરૂરી છે.");
-            return;
-        }
-
-        if (!recognition) {
-            alert("તમારા બ્રાઉઝરમાં વોઈસ ફીચર નથી.");
-            return;
-        }
-
-        if (isMicOn) {
-            // જો ચાલુ હોય તો બંધ કરો
-            isMicOn = false;
-            recognition.stop();
-            micBtn.innerText = "🎤";
-        } else {
-            // જો બંધ હોય તો ચાલુ કરો
-            isMicOn = true;
-            recognition.start();
-            micBtn.innerText = "⏹️"; // Stop icon
-        }
-    }
-
-    function processVoice(text) {
-        let cleanText = text;
-        const mapObj = {
-            'વત્તા':'+', 'plus':'+', 'સરવાળો':'+', 'ઉમેરો': '+',
-            'ઓછા':'-', 'minus':'-', 'બાદ':'-',
-            'ગુણ્યા':'*', 'into':'*', 'x':'*',
-            'ભાગ્યા':'/', 'divided':'/', 'ભાગાકાર':'/',
-            'એક':'1', 'બે':'2', 'ત્રણ':'3', 'ચાર':'4', 'પાંચ':'5', 
-            'છ':'6', 'સાત':'7', 'આઠ':'8', 'નવ':'9', 'શૂન્ય':'0'
-        };
-        for (let key in mapObj) {
-            cleanText = cleanText.replace(new RegExp(key, "g"), mapObj[key]);
         }
         
-        // અવાજમાં 'ક્લિયર' બોલે તો સ્ક્રીન સાફ થાય
-        if (cleanText.includes("clear") || cleanText.includes("સાફ")) {
-            clearDisplay();
-            return;
+        // વૉઇસ સાંભળવું બંધ કરો
+        function stopListening() {
+            isListening = false;
+            micButton.classList.remove('listening');
+            statusText.textContent = "માઇકને સક્રિય કરવા માટે બટન દબાવો";
         }
-
-        const mathChars = cleanText.replace(/[^0-9+\-*/.%]/g, '');
         
-        if(mathChars.length > 0) {
-            display.value = mathChars;
-            adjustFontSize();
+        // વૉઇસ કમાન્ડ પ્રોસેસ કરો
+        function processVoiceCommand(command) {
+            console.log("આદેશ: " + command);
+            questionDisplay.textContent = command;
             
-            // 1 સેકન્ડ પછી રિઝલ્ટ આવશે, પણ માઈક બંધ નહિ થાય
-            setTimeout(() => {
-                calculate();
-                // બોલ્યા પછી રિઝલ્ટ બોલશે (Speak function જૂનું જ રહેશે)
-            }, 1000);
+            // કમાન્ડ પ્રોસેસ કરો અને ગણતરી કરો
+            const result = calculateFromCommand(command);
+            
+            // પરિણામ દર્શાવો
+            answerDisplay.textContent = result.answer;
+            
+            // વૉઇસમાં જવાબ બોલો
+            speakAnswer(result.answer);
+            
+            // ઇતિહાસમાં ઉમેરો
+            addToHistory(command, result.answer);
+            
+            // સ્ટેટસ અપડેટ કરો
+            statusText.textContent = "ગણતરી પૂર્ણ. ફરીથી બોલવા માટે માઇક બટન દબાવો.";
         }
-    }
-
-
-    // --- Speech Output ---
-    function speak(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'gu-IN';
-            // ઓફલાઇન હોય તો પણ હિન્દી અવાજ (જે ફોનમાં સ્ટોર હોય) ટ્રાય કરશે
-            utterance.onerror = () => {
-                 utterance.lang = 'hi-IN';
-                 window.speechSynthesis.speak(utterance);
+        
+        // વૉઇસ કમાન્ડમાંથી ગણતરી કરો
+        function calculateFromCommand(command) {
+            // ટેક્સ્ટને લોઅરકેસમાં કન્વર્ટ કરો
+            const text = command.toLowerCase();
+            let answer = "";
+            let calculation = "";
+            
+            // નંબરો શોધો (ગુજરાતી અને ઇંગ્લિશ નંબરો)
+            const numbers = extractNumbers(text);
+            
+            // ટકા શોધો
+            const percentMatch = text.match(/(\d+)\s*ટકા|(\d+)\s*%/i);
+            
+            // વ્યાજ શોધો
+            const vyajMatch = text.match(/વ્યાજ/i);
+            
+            // ઓપરેશન શોધો
+            if (text.includes('ટકા') || text.includes('%')) {
+                if (vyajMatch && numbers.length >= 2) {
+                    // વ્યાજ ગણતરી: મૂળધન, ટકા, સમય
+                    const principal = numbers[0];
+                    const rate = numbers[1];
+                    const time = numbers[2] || 1; // ડિફોલ્ટ 1 વર્ષ
+                    
+                    const interest = (principal * rate * time) / 100;
+                    const total = principal + interest;
+                    
+                    answer = `₹${formatNumber(principal)} પર ${rate}% વાર્ષિક દરે ${time} વર્ષનું વ્યાજ ₹${formatNumber(interest)} છે. કુલ રકમ: ₹${formatNumber(total)}`;
+                    calculation = `વ્યાજ = (${principal} × ${rate} × ${time}) / 100 = ${interest}`;
+                } else if (numbers.length >= 2) {
+                    // સામાન્ય ટકા ગણતરી
+                    const value = numbers[0];
+                    const percent = numbers[1];
+                    const result = (value * percent) / 100;
+                    
+                    answer = `${formatNumber(value)} ના ${percent} ટકા = ${formatNumber(result)}`;
+                    calculation = `${percent}% of ${value} = (${value} × ${percent}) / 100 = ${result}`;
+                } else if (percentMatch && numbers.length >= 1) {
+                    // માત્ર ટકા
+                    const percent = parseInt(percentMatch[1] || percentMatch[2]);
+                    answer = `${percent} ટકા = ${percent}%`;
+                }
+            } else if (text.includes('ગુણાકાર') || text.includes('ગુણ') || text.includes('×')) {
+                if (numbers.length >= 2) {
+                    const result = numbers[0] * numbers[1];
+                    answer = `${formatNumber(numbers[0])} × ${formatNumber(numbers[1])} = ${formatNumber(result)}`;
+                    calculation = `${numbers[0]} × ${numbers[1]} = ${result}`;
+                }
+            } else if (text.includes('ભાગ') || text.includes('÷') || text.includes('/')) {
+                if (numbers.length >= 2) {
+                    if (numbers[1] !== 0) {
+                        const result = numbers[0] / numbers[1];
+                        answer = `${formatNumber(numbers[0])} ÷ ${formatNumber(numbers[1])} = ${formatNumber(result)}`;
+                        calculation = `${numbers[0]} ÷ ${numbers[1]} = ${result}`;
+                    } else {
+                        answer = "શૂન્ય વડે ભાગાકાર શક્ય નથી";
+                    }
+                }
+            } else if (text.includes('સરવાળો') || text.includes('ઉમેર') || text.includes('+')) {
+                if (numbers.length >= 2) {
+                    const result = numbers[0] + numbers[1];
+                    answer = `${formatNumber(numbers[0])} + ${formatNumber(numbers[1])} = ${formatNumber(result)}`;
+                    calculation = `${numbers[0]} + ${numbers[1]} = ${result}`;
+                } else if (numbers.length >= 1) {
+                    answer = `નંબર: ${formatNumber(numbers[0])}`;
+                }
+            } else if (text.includes('બાદ') || text.includes('બાદબાકી') || text.includes('-')) {
+                if (numbers.length >= 2) {
+                    const result = numbers[0] - numbers[1];
+                    answer = `${formatNumber(numbers[0])} - ${formatNumber(numbers[1])} = ${formatNumber(result)}`;
+                    calculation = `${numbers[0]} - ${numbers[1]} = ${result}`;
+                }
+            } else {
+                // જો કોઈ ઓપરેશન ન મળે, તો માત્ર નંબરો બતાવો
+                if (numbers.length > 0) {
+                    answer = `નંબરો: ${numbers.map(n => formatNumber(n)).join(', ')}`;
+                } else {
+                    answer = "હું આ ગણતરી સમજી શકયો નથી. કૃપા કરીને સ્પષ્ટ પૂછો.";
+                }
+            }
+            
+            return {
+                answer: answer,
+                calculation: calculation
             };
-            window.speechSynthesis.speak(utterance);
         }
-    }
-</script>
-
+        
+        // ટેક્સ્ટમાંથી નંબરો કાઢો
+        function extractNumbers(text) {
+            // ગુજરાતી નંબર વર્ડ્સ
+            const gujaratiNumbers = {
+                'એક': 1, 'બે': 2, 'ત્રણ': 3, 'ચાર': 4, 'પાંચ': 5,
+                'છ': 6, 'સાત': 7, 'આઠ': 8, 'નવ': 9, 'દસ': 10,
+                'અગિયાર': 11, 'બાર': 12, 'તેર': 13, 'ચૌદ': 14, 'પંદર': 15,
+                'સોળ': 16, 'સત્તર': 17, 'અઢાર': 18, 'ઓગણિસ': 19, 'વીસ': 20,
+                'ત્રણું': 30, 'ચાલીસ': 40, 'પચાસ': 50, 'સાઠ': 60, 'સિત્તેર': 70,
+                'એંસી': 80, 'નેવું': 90, 'સો': 100, 'હજાર': 1000, 'લાખ': 100000, 'કરોડ': 10000000
+            };
+            
+            // ડિજિટ્સ અને નંબર વર્ડ્સ શોધો
+            const numbers = [];
+            
+            // ડિજિટ્સ શોધો (ઇંગ્લિશ)
+            const digitMatches = text.match(/\d+/g);
+            if (digitMatches) {
+                digitMatches.forEach(match => {
+                    numbers.push(parseInt(match));
+                });
+            }
+            
+            // ગુજરાતી નંબર વર્ડ્સ શોધો
+            for (const [word, value] of Object.entries(gujaratiNumbers)) {
+                if (text.includes(word)) {
+                    numbers.push(value);
+                }
+            }
+            
+            // જો કોઈ નંબર ન મળે, તો "નો" ની આસપાસના શબ્દો તપાસો
+            if (numbers.length === 0) {
+                const ofMatch = text.match(/(\d+)\s*નો/i);
+                if (ofMatch) {
+                    numbers.push(parseInt(ofMatch[1]));
+                }
+            }
+            
+            return numbers;
+        }
+        
+        // નંબરને ફોર્મેટ કરો (કોમા સાથે)
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        // જવાબ વૉઇસમાં બોલો
+        function speakAnswer(text) {
+            if ('speechSynthesis' in window) {
+                const speech = new SpeechSynthesisUtterance();
+                speech.text = text;
+                speech.lang = 'gu-IN'; // ગુજરાતી
+                speech.rate = 0.9; // ધીમી ગતિ
+                speech.pitch = 1;
+                speech.volume = 1;
+                
+                window.speechSynthesis.speak(speech);
+            }
+        }
+        
+        // ઇતિહાસમાં ઉમેરો
+        function addToHistory(question, answer) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <strong>પ્રશ્ન:</strong> ${question}<br>
+                <strong>જવાબ:</strong> ${answer}
+                <span class="time">${timeString}</span>
+            `;
+            
+            historyList.prepend(historyItem);
+            
+            // ઇતિહાસ સ્ટોરેજમાં સેવ કરો (લોકલસ્ટોરેજ)
+            saveHistory(question, answer, timeString);
+            
+            // ઇતિહાસ 10 આઇટમ સુધી જ સીમિત રાખો
+            if (historyList.children.length > 10) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+        
+        // ઇતિહાસ સ્ટોરેજમાં સેવ કરો
+        function saveHistory(question, answer, time) {
+            let history = JSON.parse(localStorage.getItem('voiceCalculatorHistory') || '[]');
+            
+            history.unshift({
+                question: question,
+                answer: answer,
+                time: time,
+                date: new Date().toISOString()
+            });
+            
+            // મહત્તમ 20 આઇટમ્સ જ સંગ્રહો
+            if (history.length > 20) {
+                history = history.slice(0, 20);
+            }
+            
+            localStorage.setItem('voiceCalculatorHistory', JSON.stringify(history));
+        }
+        
+        // ઇતિહાસ લોડ કરો
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('voiceCalculatorHistory') || '[]');
+            
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <strong>પ્રશ્ન:</strong> ${item.question}<br>
+                    <strong>જવાબ:</strong> ${item.answer}
+                    <span class="time">${item.time}</span>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // ઉદાહરણ બોલો
+        function speakExample(element) {
+            const exampleText = element.textContent;
+            questionDisplay.textContent = exampleText;
+            
+            // ઉદાહરણ પ્રોસેસ કરો
+            const result = calculateFromCommand(exampleText);
+            answerDisplay.textContent = result.answer;
+            
+            // વૉઇસમાં બોલો
+            speakAnswer(result.answer);
+            
+            // ઇતિહાસમાં ઉમેરો
+            addToHistory(exampleText, result.answer);
+            
+            // સ્ટેટસ અપડેટ કરો
+            statusText.textContent = "ઉદાહરણ પ્રોસેસ થયું. ગણતરી માટે માઇક બટન દબાવો.";
+        }
+        
+        // કીબોર્ડ શોર્ટકટ (સ્પેસબાર માઇક ટોગલ)
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !event.target.matches('button, input, textarea')) {
+                event.preventDefault();
+                micButton.click();
+            }
+        });
+    </script>
 </body>
 </html>
