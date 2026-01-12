@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Dev કેલ્ક્યુલેટર</title>
+    <title>Dev Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -44,6 +44,18 @@
             color: #0c2461;
             font-size: 1.8rem;
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .app-name {
+            background: linear-gradient(135deg, #0c2461, #3498db);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.3rem;
         }
         
         .header p {
@@ -240,6 +252,11 @@
             border-radius: 8px;
             font-size: 0.9rem;
             border-left: 4px solid #3498db;
+            cursor: pointer;
+        }
+        
+        .history-item:hover {
+            background: #e3f2fd;
         }
         
         .history-calculation {
@@ -277,6 +294,11 @@
         .developer-phone {
             color: #27ae60;
             direction: ltr;
+            text-decoration: none;
+        }
+        
+        .developer-phone:hover {
+            text-decoration: underline;
         }
         
         /* રિસ્પોન્સિવ */
@@ -322,8 +344,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎤 Dev કેલ્ક્યુલેટર</h1>
-            <p>બોલો, ટાઇપ કરો અથવા ક્લિક કરો</p>
+            <h1>
+                <i class="fas fa-calculator"></i>
+                <span class="app-name">Dev Calculator</span>
+            </h1>
+            <p>વૉઇસ અને ટચ કેલ્ક્યુલેટર</p>
         </div>
         
         <!-- કેલ્ક્યુલેટર ડિસ્પ્લે -->
@@ -332,27 +357,27 @@
             <div class="result-display" id="resultDisplay">0</div>
         </div>
         
-        <!-- કેલ્ક્યુલેટર બટન્સ -->
+        <!-- કેલ્ક્યુલેટર બટન્સ (FIXED OPERATORS) -->
         <div class="calculator-buttons">
             <button class="calc-btn clear" onclick="clearCalculator()">C</button>
             <button class="calc-btn function" onclick="deleteLast()">⌫</button>
             <button class="calc-btn function" onclick="appendToDisplay('%')">%</button>
-            <button class="calc-btn operator" onclick="appendToDisplay('/')">÷</button>
+            <button class="calc-btn operator" onclick="handleOperator('/')">÷</button>
             
             <button class="calc-btn number" onclick="appendToDisplay('7')">7</button>
             <button class="calc-btn number" onclick="appendToDisplay('8')">8</button>
             <button class="calc-btn number" onclick="appendToDisplay('9')">9</button>
-            <button class="calc-btn operator" onclick="appendToDisplay('*')">×</button>
+            <button class="calc-btn operator" onclick="handleOperator('*')">×</button>
             
             <button class="calc-btn number" onclick="appendToDisplay('4')">4</button>
             <button class="calc-btn number" onclick="appendToDisplay('5')">5</button>
             <button class="calc-btn number" onclick="appendToDisplay('6')">6</button>
-            <button class="calc-btn operator" onclick="appendToDisplay('-')">−</button>
+            <button class="calc-btn operator" onclick="handleOperator('-')">−</button>
             
             <button class="calc-btn number" onclick="appendToDisplay('1')">1</button>
             <button class="calc-btn number" onclick="appendToDisplay('2')">2</button>
             <button class="calc-btn number" onclick="appendToDisplay('3')">3</button>
-            <button class="calc-btn operator" onclick="appendToDisplay('+')">+</button>
+            <button class="calc-btn operator" onclick="handleOperator('+')">+</button>
             
             <button class="calc-btn number" onclick="appendToDisplay('0')">0</button>
             <button class="calc-btn number" onclick="appendToDisplay('.')">.</button>
@@ -372,7 +397,7 @@
             </div>
             
             <div class="voice-examples">
-                જેમ કે: "1000 ના 10 ટકા" અથવા "500 વત્તા 300"
+                જેમ કે: "1000 વત્તા 500" અથવા "5000 ના 10 ટકા"
             </div>
         </div>
         
@@ -380,7 +405,7 @@
         <div class="history-section">
             <div class="history-title">
                 <span>ઇતિહાસ</span>
-                <button style="background: none; border: none; color: #e74c3c; cursor: pointer;" onclick="clearHistory()">
+                <button style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 0.9rem;" onclick="clearHistory()">
                     સાફ કરો
                 </button>
             </div>
@@ -394,7 +419,7 @@
             <p>વૉઇસ રેકોગ્નિશન માટે માઇક્રોફોન પરવાનગી આપો</p>
             <div class="developer-info">
                 <div class="developer-name">Developed by Devendra Ramanuj</div>
-                <div class="developer-phone">+91 9276505935</div>
+                <a href="tel:+919276505935" class="developer-phone">+91 9276505935</a>
             </div>
         </div>
     </div>
@@ -407,28 +432,156 @@
         const statusText = document.getElementById('statusText');
         const historyList = document.getElementById('historyList');
         
-        // કેલ્ક્યુલેટર સ્ટેટ
+        // કેલ્ક્યુલેટર સ્ટેટ - FIXED
         let currentInput = '0';
         let previousInput = '';
         let operator = null;
-        let waitingForNewInput = false;
-        
-        // વૉઇસ રેકોગ્નિશન સેટઅપ
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition;
-        let isListening = false;
+        let shouldResetScreen = false;
         
         // પેજ લોડ થયે સેટઅપ
         document.addEventListener('DOMContentLoaded', function() {
-            // કેલ્ક્યુલેટર ઇનિશિયલાઇઝ
             updateDisplay();
+            loadHistory();
             
             // વૉઇસ રેકોગ્નિશન સેટઅપ
+            setupVoiceRecognition();
+            
+            // કીબોર્ડ સપોર્ટ
+            document.addEventListener('keydown', handleKeyPress);
+        });
+        
+        // કેલ્ક્યુલેટર ફંક્શન્સ - FIXED
+        function appendToDisplay(value) {
+            if (currentInput === '0' || shouldResetScreen) {
+                currentInput = value;
+                shouldResetScreen = false;
+            } else {
+                currentInput += value;
+            }
+            updateDisplay();
+        }
+        
+        function handleOperator(op) {
+            if (operator !== null) calculateResult();
+            
+            previousInput = currentInput;
+            operator = op;
+            shouldResetScreen = true;
+            
+            updateDisplay();
+        }
+        
+        function calculateResult() {
+            if (operator === null || shouldResetScreen) return;
+            
+            let computation;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+            
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            switch (operator) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    if (current === 0) {
+                        alert("શૂન્ય વડે ભાગાકાર શક્ય નથી");
+                        clearCalculator();
+                        return;
+                    }
+                    computation = prev / current;
+                    break;
+                case '%':
+                    computation = prev % current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // ઇતિહાસમાં ઉમેરો
+            const expression = `${formatDisplayNumber(prev)} ${operator} ${formatDisplayNumber(current)}`;
+            addToHistory(expression, computation);
+            
+            // ડિસ્પ્લે અપડેટ
+            currentInput = computation.toString();
+            operator = null;
+            previousInput = '';
+            shouldResetScreen = true;
+            
+            calculationDisplay.textContent = expression + ' =';
+            resultDisplay.textContent = formatNumber(computation);
+            
+            // વૉઇસ આઉટપુટ
+            speakAnswer(`જવાબ છે ${formatNumber(computation)}`);
+        }
+        
+        function clearCalculator() {
+            currentInput = '0';
+            previousInput = '';
+            operator = null;
+            shouldResetScreen = false;
+            updateDisplay();
+        }
+        
+        function deleteLast() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+        
+        function updateDisplay() {
+            resultDisplay.textContent = formatDisplayNumber(currentInput);
+            
+            if (operator !== null) {
+                calculationDisplay.textContent = `${formatDisplayNumber(previousInput)} ${operator}`;
+            } else {
+                calculationDisplay.textContent = '';
+            }
+        }
+        
+        function formatDisplayNumber(num) {
+            const number = parseFloat(num);
+            if (isNaN(number)) return '0';
+            
+            // ડિસ્પ્લે માટે કોમા સાથે ફોર્મેટ
+            return number.toLocaleString('en-IN', {
+                maximumFractionDigits: 10
+            });
+        }
+        
+        function formatNumber(num) {
+            const number = parseFloat(num);
+            if (isNaN(number)) return '0';
+            
+            // બડા નંબર માટે
+            if (Math.abs(number) >= 1e9) {
+                return number.toExponential(2);
+            }
+            
+            return number.toLocaleString('en-IN', {
+                maximumFractionDigits: 10
+            });
+        }
+        
+        // વૉઇસ રેકોગ્નિશન સેટઅપ
+        function setupVoiceRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
                 recognition.continuous = false;
                 recognition.interimResults = false;
-                recognition.lang = 'gu-IN'; // ગુજરાતી
+                recognition.lang = 'gu-IN';
                 
                 recognition.onstart = function() {
                     isListening = true;
@@ -455,13 +608,10 @@
                 statusText.textContent = "તમારો બ્રાઉઝર વૉઇસ રેકોગ્નિશન સપોર્ટ કરતો નથી";
                 micButton.disabled = true;
             }
-            
-            // ઇતિહાસ લોડ કરો
-            loadHistory();
-            
-            // કીબોર્ડ સપોર્ટ
-            document.addEventListener('keydown', handleKeyPress);
-        });
+        }
+        
+        let recognition;
+        let isListening = false;
         
         // માઇક બટન ક્લિક
         micButton.addEventListener('click', function() {
@@ -472,7 +622,6 @@
             }
         });
         
-        // વૉઇસ સાંભળવું શરૂ કરો
         function startListening() {
             if (recognition) {
                 try {
@@ -483,7 +632,6 @@
             }
         }
         
-        // વૉઇસ સાંભળવું બંધ કરો
         function stopListening() {
             isListening = false;
             micButton.classList.remove('listening');
@@ -491,119 +639,123 @@
             micButton.innerHTML = '<i class="fas fa-microphone"></i>';
         }
         
-        // વૉઇસ કમાન્ડ પ્રોસેસ કરો
+        // વૉઇસ કમાન્ડ પ્રોસેસ
         function processVoiceCommand(command) {
             console.log("આદેશ: " + command);
-            
-            // સ્ટેટસ અપડેટ
             statusText.textContent = `"${command}"`;
             
-            // કમાન્ડ પ્રોસેસ કરો
             let processedCommand = command.toLowerCase();
             
-            // ગુજરાતી નંબર કન્વર્ઝન
+            // ગુજરાતી નંબર અને ઓપરેટર કન્વર્ઝન
             const gujaratiNumbers = {
                 'શૂન્ય': '0', 'એક': '1', 'બે': '2', 'ત્રણ': '3', 'ચાર': '4',
                 'પાંચ': '5', 'છ': '6', 'સાત': '7', 'આઠ': '8', 'નવ': '9',
-                'દસ': '10', 'સો': '100', 'હજાર': '1000', 'લાખ': '100000'
+                'દસ': '10', 'વીસ': '20', 'ત્રીસ': '30', 'ચાલીસ': '40', 'પચાસ': '50',
+                'સાઠ': '60', 'સિત્તેર': '70', 'એંસી': '80', 'નેવું': '90',
+                'સો': '100', 'હજાર': '1000', 'લાખ': '100000', 'કરોડ': '10000000'
             };
             
-            // ગુજરાતી ઓપરેટર કન્વર્ઝન
             const gujaratiOperators = {
-                'વત્તા': '+', 'પ્લસ': '+', 'ઉમેર': '+',
-                'બાદ': '-', 'માઈનસ': '-', 'ઘટાડ': '-',
-                'ગુણાકાર': '*', 'ગુણ': '*', 'મલ્ટીપ્લાય': '*',
-                'ભાગાકાર': '/', 'ભાગ': '/', 'ડિવાઇડ': '/',
-                'ટકા': '%', 'પરસેન્ટ': '%',
-                'બરાબર': '=', 'ઇક્વલ': '=',
-                'ડોટ': '.', 'પોઈન્ટ': '.'
+                'વત્તા': '+', 'પ્લસ': '+', 'ઉમેર': '+', 'જમા': '+',
+                'બાદ': '-', 'માઈનસ': '-', 'ઘટાડ': '-', 'ઓછા': '-',
+                'ગુણાકાર': '*', 'ગુણ': '*', 'મલ્ટીપ્લાય': '*', 'નાખવું': '*',
+                'ભાગાકાર': '/', 'ભાગ': '/', 'ડિવાઇડ': '/', 'વિભાજન': '/',
+                'ટકા': '%', 'પરસેન્ટ': '%', 'ટકા ગણો': '%',
+                'બરાબર': '=', 'ઇક્વલ': '=', 'કેટલું': '=',
+                'ડોટ': '.', 'પોઈન્ટ': '.', 'દશાંશ': '.'
             };
             
-            // નંબર રિપ્લેસમેન્ટ
+            // નંબર રિપ્લેસ
             Object.keys(gujaratiNumbers).forEach(gujNum => {
                 const regex = new RegExp(gujNum, 'g');
                 processedCommand = processedCommand.replace(regex, gujaratiNumbers[gujNum]);
             });
             
-            // ઓપરેટર રિપ્લેસમેન્ટ
+            // ઓપરેટર રિપ્લેસ
             Object.keys(gujaratiOperators).forEach(gujOp => {
                 const regex = new RegExp(gujOp, 'g');
                 processedCommand = processedCommand.replace(regex, gujaratiOperators[gujOp]);
             });
             
-            // વિશેષ કેસ: "નો" અથવા "ના" (ટકા માટે)
-            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*ટકા/g, ' * $1%');
-            processedCommand = processedCommand.replace(/નો\s*(\d+)\s*ટકા/g, ' * $1%');
-            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*પરસેન્ટ/g, ' * $1%');
+            // વિશેષ કેસ: ટકા માટે
+            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*ટકા/g, ' * $1 / 100');
+            processedCommand = processedCommand.replace(/નો\s*(\d+)\s*ટકા/g, ' * $1 / 100');
+            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*પરસેન્ટ/g, ' * $1 / 100');
             
-            // નંબર એક્સટ્રેક્ટ કરો અને એક્ઝિક્યુટ કરો
-            const numbers = processedCommand.match(/\d+(\.\d+)?/g);
-            const operators = processedCommand.match(/[\+\-\*\/\%]/g);
+            // કલેન કરો અને એક્ઝિક્યુટ કરો
+            processedCommand = processedCommand.replace(/[^\d\+\-\*\/\.\%\s]/g, '');
+            processedCommand = processedCommand.trim();
             
-            if (numbers && numbers.length > 0) {
-                if (operators && operators.length > 0) {
-                    // મલ્ટીપલ નંબર્સ અને ઓપરેટર્સ
-                    let expression = '';
-                    
-                    if (processedCommand.includes('=') || processedCommand.includes('બરાબર')) {
-                        // એક્સપ્રેશન કેલ્ક્યુલેશન
-                        expression = processedCommand.replace(/બરાબર|=/g, '').trim();
-                    } else {
-                        // સિંપલ ઓપરેશન
-                        if (numbers.length >= 2 && operators.length >= 1) {
-                            expression = numbers[0] + operators[0] + numbers[1];
-                        } else if (processedCommand.includes('ટકા') || processedCommand.includes('%')) {
-                            // ટકા કેલ્ક્યુલેશન
-                            if (numbers.length >= 2) {
-                                expression = numbers[0] + '*' + numbers[1] + '/100';
-                            } else if (numbers.length >= 1) {
-                                expression = currentInput + '*' + numbers[0] + '/100';
+            console.log("પ્રોસેસ્ડ કમાન્ડ: " + processedCommand);
+            
+            // સિંપલ એક્સપ્રેશન હોય તો
+            if (processedCommand.includes('+') || processedCommand.includes('-') || 
+                processedCommand.includes('*') || processedCommand.includes('/')) {
+                
+                try {
+                    // પ્રથમ કેલ્ક્યુલેટ કરો
+                    let result;
+                    if (processedCommand.includes('%')) {
+                        // ટકા હોય તો
+                        const parts = processedCommand.split(/([\+\-\*\/])/);
+                        let expression = '';
+                        
+                        for (let i = 0; i < parts.length; i++) {
+                            if (parts[i].includes('%')) {
+                                const num = parseFloat(parts[i].replace('%', ''));
+                                expression += `(${num} / 100)`;
+                            } else {
+                                expression += parts[i];
                             }
                         }
+                        
+                        result = eval(expression);
+                    } else {
+                        result = eval(processedCommand);
                     }
                     
-                    if (expression) {
-                        try {
-                            // સેનિટાઇઝ એક્સપ્રેશન
-                            expression = expression.replace(/[^\d\+\-\*\/\.\%\(\)]/g, '');
-                            const result = eval(expression);
-                            
-                            // ડિસ્પ્લે અપડેટ
-                            currentInput = result.toString();
-                            calculationDisplay.textContent = expression + ' =';
-                            resultDisplay.textContent = formatNumber(result);
-                            
-                            // ઇતિહાસમાં ઉમેરો
-                            addToHistory(expression, result);
-                            
-                            // વૉઇસ આઉટપુટ
-                            speakAnswer(`જવાબ છે ${result}`);
-                        } catch (error) {
-                            speakAnswer("માફ કરશો, હું આ ગણતરી સમજી શકયો નથી");
-                        }
-                    }
-                } else if (processedCommand.includes('ટકા') || processedCommand.includes('%')) {
-                    // ટકા કેલ્ક્યુલેશન
-                    const number = parseFloat(numbers[0]);
-                    const percentage = number + '%';
+                    // ડિસ્પ્લે અપડેટ
+                    currentInput = result.toString();
+                    calculationDisplay.textContent = processedCommand + ' =';
+                    resultDisplay.textContent = formatNumber(result);
                     
-                    appendToDisplay(percentage);
-                    calculateResult();
-                    speakAnswer(`${number} ટકા`);
-                } else {
-                    // માત્ર નંબર
-                    const number = numbers[0];
-                    clearCalculator();
-                    currentInput = number;
-                    updateDisplay();
-                    speakAnswer(number);
+                    // ઇતિહાસ
+                    addToHistory(processedCommand, result);
+                    
+                    // વૉઇસ આઉટપુટ
+                    speakAnswer(`જવાબ છે ${formatNumber(result)}`);
+                    
+                } catch (error) {
+                    speakAnswer("માફ કરશો, ગણતરીમાં ત્રુટિ આવી");
                 }
+                
+            } else if (processedCommand.includes('%')) {
+                // ફક્ત ટકા
+                const num = parseFloat(processedCommand.replace('%', ''));
+                if (!isNaN(num)) {
+                    const result = (parseFloat(currentInput) * num) / 100;
+                    currentInput = result.toString();
+                    calculationDisplay.textContent = `${currentInput} ના ${num}% =`;
+                    resultDisplay.textContent = formatNumber(result);
+                    addToHistory(`${currentInput} ના ${num}%`, result);
+                    speakAnswer(`${num} ટકા છે ${formatNumber(result)}`);
+                }
+                
             } else {
-                speakAnswer("મને કોઈ નંબર સમજાયો નથી");
+                // માત્ર નંબર
+                const numbers = processedCommand.match(/\d+(\.\d+)?/g);
+                if (numbers && numbers.length > 0) {
+                    clearCalculator();
+                    currentInput = numbers[0];
+                    updateDisplay();
+                    speakAnswer(numbers[0]);
+                } else {
+                    speakAnswer("કોઈ નંબર સમજાયો નથી");
+                }
             }
         }
         
-        // જવાબ વૉઇસમાં બોલો
+        // વૉઇસ આઉટપુટ
         function speakAnswer(text) {
             if ('speechSynthesis' in window) {
                 const speech = new SpeechSynthesisUtterance();
@@ -617,115 +769,6 @@
             }
         }
         
-        // કેલ્ક્યુલેટર ફંક્શન્સ
-        function appendToDisplay(value) {
-            if (waitingForNewInput) {
-                currentInput = value;
-                waitingForNewInput = false;
-            } else {
-                currentInput = currentInput === '0' ? value : currentInput + value;
-            }
-            updateDisplay();
-        }
-        
-        function updateDisplay() {
-            resultDisplay.textContent = formatNumber(currentInput);
-            calculationDisplay.textContent = previousInput + (operator ? ' ' + operator + ' ' : '');
-        }
-        
-        function setOperator(op) {
-            if (currentInput === '0' && op !== '-') return;
-            
-            if (operator !== null && !waitingForNewInput) {
-                calculateResult();
-            }
-            
-            previousInput = currentInput;
-            operator = op;
-            waitingForNewInput = true;
-            updateDisplay();
-        }
-        
-        function calculateResult() {
-            let computation;
-            const prev = parseFloat(previousInput);
-            const current = parseFloat(currentInput);
-            
-            if (isNaN(prev) || isNaN(current)) return;
-            
-            switch (operator) {
-                case '+':
-                    computation = prev + current;
-                    break;
-                case '-':
-                    computation = prev - current;
-                    break;
-                case '*':
-                    computation = prev * current;
-                    break;
-                case '/':
-                    if (current === 0) {
-                        alert("શૂન્ય વડે ભાગાકાર શક્ય નથી");
-                        return;
-                    }
-                    computation = prev / current;
-                    break;
-                case '%':
-                    computation = prev * (current / 100);
-                    break;
-                default:
-                    return;
-            }
-            
-            // ઇતિહાસમાં ઉમેરો
-            const expression = `${prev} ${operator} ${current}`;
-            addToHistory(expression, computation);
-            
-            // ડિસ્પ્લે અપડેટ
-            currentInput = computation.toString();
-            operator = null;
-            previousInput = '';
-            waitingForNewInput = true;
-            
-            calculationDisplay.textContent = expression + ' =';
-            resultDisplay.textContent = formatNumber(computation);
-            
-            // વૉઇસ આઉટપુટ
-            speakAnswer(`જવાબ છે ${computation}`);
-        }
-        
-        function clearCalculator() {
-            currentInput = '0';
-            previousInput = '';
-            operator = null;
-            waitingForNewInput = false;
-            updateDisplay();
-        }
-        
-        function deleteLast() {
-            if (currentInput.length > 1) {
-                currentInput = currentInput.slice(0, -1);
-            } else {
-                currentInput = '0';
-            }
-            updateDisplay();
-        }
-        
-        function formatNumber(num) {
-            const number = parseFloat(num);
-            if (isNaN(number)) return '0';
-            
-            // બડા નંબર માટે સાઈન્ટિફિક નોટેશન
-            if (Math.abs(number) >= 1e9) {
-                return number.toExponential(2);
-            }
-            
-            // કોમા સાથે ફોર્મેટ
-            return number.toLocaleString('en-IN', {
-                maximumFractionDigits: 10
-            });
-        }
-        
         // કીબોર્ડ સપોર્ટ
         function handleKeyPress(e) {
             const key = e.key;
@@ -734,10 +777,28 @@
                 appendToDisplay(key);
             } else if (key === '.') {
                 appendToDisplay('.');
-            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
-                setOperator(key);
+            } else if (key === '+') {
+                handleOperator('+');
+            } else if (key === '-') {
+                handleOperator('-');
+            } else if (key === '*') {
+                handleOperator('*');
+            } else if (key === '/') {
+                e.preventDefault();
+                handleOperator('/');
             } else if (key === '%') {
-                appendToDisplay('%');
+                // ટકા કેલ્ક્યુલેશન
+                const current = parseFloat(currentInput);
+                if (!isNaN(current)) {
+                    const percent = prompt("કેટલા ટકા ગણવા છે?", "10");
+                    if (percent && !isNaN(parseFloat(percent))) {
+                        const result = (current * parseFloat(percent)) / 100;
+                        currentInput = result.toString();
+                        calculationDisplay.textContent = `${formatNumber(current)} ના ${percent}% =`;
+                        resultDisplay.textContent = formatNumber(result);
+                        addToHistory(`${current} ના ${percent}%`, result);
+                    }
+                }
             } else if (key === 'Enter' || key === '=') {
                 e.preventDefault();
                 calculateResult();
@@ -766,7 +827,6 @@
                 <div class="history-result">${formatNumber(result)}</div>
             `;
             
-            // ક્લિક કરવા પર ફરીથી ઉપયોગ કરો
             historyItem.addEventListener('click', function() {
                 clearCalculator();
                 currentInput = result.toString();
@@ -775,17 +835,15 @@
             
             historyList.prepend(historyItem);
             
-            // સ્ટોરેજમાં સેવ કરો
             saveHistory(expression, result, timeString);
             
-            // મહત્તમ 10 આઇટમ્સ
             if (historyList.children.length > 10) {
                 historyList.removeChild(historyList.lastChild);
             }
         }
         
         function saveHistory(expression, result, time) {
-            let history = JSON.parse(localStorage.getItem('voiceCalcHistory') || '[]');
+            let history = JSON.parse(localStorage.getItem('devCalcHistory') || '[]');
             
             history.unshift({
                 expression: expression,
@@ -794,16 +852,15 @@
                 date: new Date().toISOString()
             });
             
-            // મહત્તમ 15 આઇટમ્સ
             if (history.length > 15) {
                 history = history.slice(0, 15);
             }
             
-            localStorage.setItem('voiceCalcHistory', JSON.stringify(history));
+            localStorage.setItem('devCalcHistory', JSON.stringify(history));
         }
         
         function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('voiceCalcHistory') || '[]');
+            const history = JSON.parse(localStorage.getItem('devCalcHistory') || '[]');
             
             history.forEach(item => {
                 const historyItem = document.createElement('div');
@@ -824,8 +881,10 @@
         }
         
         function clearHistory() {
-            historyList.innerHTML = '';
-            localStorage.removeItem('voiceCalcHistory');
+            if (confirm("શું તમે ઇતિહાસ સાફ કરવા માંગો છો?")) {
+                historyList.innerHTML = '';
+                localStorage.removeItem('devCalcHistory');
+            }
         }
     </script>
 </body>
