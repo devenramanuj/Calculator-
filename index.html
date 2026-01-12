@@ -4,1007 +4,171 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dev Calculator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .calculator-card { background: white; width: 100%; max-width: 400px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); padding: 25px; text-align: center; border: 2px solid #ff9800; }
+        .app-name { font-size: 24px; color: #ff9800; font-weight: bold; margin-bottom: 15px; }
+        .display { width: 100%; height: 70px; background: #222; color: #00ff00; border-radius: 12px; margin-bottom: 20px; text-align: right; padding: 15px; font-size: 32px; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        .btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
         
-        body {
-            background: linear-gradient(135deg, #0c2461, #1e3799);
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+        button { padding: 20px; font-size: 24px; border: none; border-radius: 15px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        .num-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; }
+        .num-btn:active { background: #e2e6ea; }
         
-        .container {
-            width: 100%;
-            max-width: 420px;
-            background: #fff;
-            border-radius: 25px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            overflow: hidden;
-            padding: 20px;
-        }
+        /* મોટા અને રંગીન ઓપરેટર બટન્સ */
+        .op-btn { background: #ff9800; color: white; font-size: 28px; }
+        .op-btn:active { background: #e68a00; }
         
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
+        .voice-btn { background: #4caf50; color: white; grid-column: span 4; font-size: 20px; margin-bottom: 10px; }
+        .clear-btn { background: #f44336; color: white; }
         
-        .header h1 {
-            color: #0c2461;
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        .history-section { margin-top: 20px; text-align: left; border-top: 2px solid #eee; padding-top: 15px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .history-list { max-height: 120px; overflow-y: auto; font-size: 16px; color: #555; background: #f9f9f9; padding: 10px; border-radius: 8px; }
         
-        .app-name {
-            background: linear-gradient(135deg, #0c2461, #3498db);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 1.3rem;
-        }
+        .h-clear { background: #777; color: white; font-size: 14px; padding: 5px 10px; border-radius: 5px; }
         
-        .header p {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        /* કેલ્ક્યુલેટર ડિસ્પ્લે */
-        .calculator-display {
-            background: #222;
-            color: #fff;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: right;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-        
-        .calculation-display {
-            font-size: 1.2rem;
-            color: #aaa;
-            min-height: 30px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            direction: ltr;
-        }
-        
-        .result-display {
-            font-size: 2.5rem;
-            font-weight: bold;
-            min-height: 50px;
-            direction: ltr;
-        }
-        
-        /* કેલ્ક્યુલેટર બટન્સ */
-        .calculator-buttons {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        
-        .calc-btn {
-            height: 70px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .calc-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .calc-btn:active {
-            transform: translateY(1px);
-        }
-        
-        .number {
-            background: #f8f9fa;
-            color: #333;
-        }
-        
-        .operator {
-            background: #f1c40f;
-            color: #000;
-        }
-        
-        .function {
-            background: #95a5a6;
-            color: white;
-        }
-        
-        .equals {
-            background: #2ecc71;
-            color: white;
-        }
-        
-        .clear {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        /* વૉઇસ કંટ્રોલ */
-        .voice-control {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 20px;
-        }
-        
-        .mic-container {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .mic-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: none;
-            color: white;
-            font-size: 2.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
-            z-index: 2;
-        }
-        
-        .mic-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 25px rgba(231, 76, 60, 0.4);
-        }
-        
-        .mic-btn.listening {
-            background: linear-gradient(135deg, #27ae60, #229954);
-            animation: pulse 1.5s infinite;
-            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.4);
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        .mic-status {
-            font-size: 1.1rem;
-            color: #333;
-            text-align: center;
-            min-height: 25px;
-            font-weight: 500;
-            padding: 5px 10px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-        
-        .voice-examples {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            line-height: 1.4;
-        }
-        
-        /* વ્યાજ કેલ્ક્યુલેટર */
-        .interest-calculator {
-            background: #e8f4fd;
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px dashed #3498db;
-        }
-        
-        .interest-title {
-            color: #0c2461;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .interest-formula {
-            font-size: 0.85rem;
-            color: #2c3e50;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-family: monospace;
-        }
-        
-        /* ઇતિહાસ */
-        .history-section {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 15px;
-            margin-top: 15px;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
-        .history-title {
-            color: #0c2461;
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 10px;
-            background: white;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            border-left: 4px solid #3498db;
-            cursor: pointer;
-        }
-        
-        .history-item:hover {
-            background: #e3f2fd;
-        }
-        
-        .history-calculation {
-            color: #555;
-        }
-        
-        .history-result {
-            font-weight: bold;
-            color: #27ae60;
-        }
-        
-        /* ફૂટર */
-        .footer {
-            text-align: center;
-            padding: 15px 0 5px 0;
-            color: #666;
-            font-size: 0.85rem;
-            border-top: 1px solid #eee;
-            margin-top: 15px;
-        }
-        
-        .developer-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        .developer-name {
-            color: #0c2461;
-            font-weight: bold;
-        }
-        
-        .developer-phone {
-            color: #27ae60;
-            direction: ltr;
-            text-decoration: none;
-        }
-        
-        .developer-phone:hover {
-            text-decoration: underline;
-        }
-        
-        /* રિસ્પોન્સિવ */
-        @media (max-width: 450px) {
-            .container {
-                padding: 15px;
-                border-radius: 20px;
-            }
-            
-            .header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .calc-btn {
-                height: 65px;
-                font-size: 1.3rem;
-                border-radius: 12px;
-            }
-            
-            .result-display {
-                font-size: 2.2rem;
-            }
-            
-            .mic-btn {
-                width: 70px;
-                height: 70px;
-                font-size: 1.8rem;
-            }
-        }
-        
-        @media (max-width: 350px) {
-            .calc-btn {
-                height: 60px;
-                font-size: 1.2rem;
-            }
-            
-            .result-display {
-                font-size: 2rem;
-            }
-        }
+        .credit { margin-top: 20px; font-size: 14px; color: #444; font-weight: bold; border-top: 1px solid #eee; padding-top: 15px; line-height: 1.6; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <i class="fas fa-calculator"></i>
-                <span class="app-name">Dev Calculator</span>
-            </h1>
-            <p>વૉઇસ અને ટચ કેલ્ક્યુલેટર</p>
-        </div>
+
+<div class="calculator-card">
+    <div class="app-name">@ Dev Calculator</div>
+    
+    <div class="display" id="display">0</div>
+    
+    <button class="voice-btn" onclick="startVoice()">🎤 બોલીને ગણતરી કરો</button>
+    
+    <div class="btn-grid">
+        <button class="clear-btn" onclick="clearDisplay()">C</button>
+        <button class="op-btn" onclick="appendToDisplay('/')">÷</button>
+        <button class="op-btn" onclick="appendToDisplay('*')">×</button>
+        <button class="op-btn" onclick="deleteLast()">⌫</button>
         
-        <!-- કેલ્ક્યુલેટર ડિસ્પ્લે -->
-        <div class="calculator-display">
-            <div class="calculation-display" id="calculationDisplay">0</div>
-            <div class="result-display" id="resultDisplay">0</div>
-        </div>
+        <button class="num-btn" onclick="appendToDisplay('7')">7</button>
+        <button class="num-btn" onclick="appendToDisplay('8')">8</button>
+        <button class="num-btn" onclick="appendToDisplay('9')">9</button>
+        <button class="op-btn" onclick="appendToDisplay('-')">−</button>
         
-        <!-- વ્યાજ કેલ્ક્યુલેટર -->
-        <div class="interest-calculator">
-            <div class="interest-title">
-                <i class="fas fa-percentage"></i>
-                વ્યાજ કેલ્ક્યુલેટર
-            </div>
-            <div class="interest-formula">
-                સાદુ વ્યાજ = (મૂળધન × દર × સમય) / 100
-            </div>
-            <div class="voice-examples">
-                "100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ"
-            </div>
-        </div>
+        <button class="num-btn" onclick="appendToDisplay('4')">4</button>
+        <button class="num-btn" onclick="appendToDisplay('5')">5</button>
+        <button class="num-btn" onclick="appendToDisplay('6')">6</button>
+        <button class="op-btn" onclick="appendToDisplay('+')">+</button>
         
-        <!-- કેલ્ક્યુલેટર બટન્સ -->
-        <div class="calculator-buttons">
-            <button class="calc-btn clear" onclick="clearCalculator()">C</button>
-            <button class="calc-btn function" onclick="deleteLast()">⌫</button>
-            <button class="calc-btn function" onclick="appendToDisplay('%')">%</button>
-            <button class="calc-btn operator" onclick="handleOperator('/')">÷</button>
-            
-            <button class="calc-btn number" onclick="appendToDisplay('7')">7</button>
-            <button class="calc-btn number" onclick="appendToDisplay('8')">8</button>
-            <button class="calc-btn number" onclick="appendToDisplay('9')">9</button>
-            <button class="calc-btn operator" onclick="handleOperator('*')">×</button>
-            
-            <button class="calc-btn number" onclick="appendToDisplay('4')">4</button>
-            <button class="calc-btn number" onclick="appendToDisplay('5')">5</button>
-            <button class="calc-btn number" onclick="appendToDisplay('6')">6</button>
-            <button class="calc-btn operator" onclick="handleOperator('-')">−</button>
-            
-            <button class="calc-btn number" onclick="appendToDisplay('1')">1</button>
-            <button class="calc-btn number" onclick="appendToDisplay('2')">2</button>
-            <button class="calc-btn number" onclick="appendToDisplay('3')">3</button>
-            <button class="calc-btn operator" onclick="handleOperator('+')">+</button>
-            
-            <button class="calc-btn number" onclick="appendToDisplay('0')">0</button>
-            <button class="calc-btn number" onclick="appendToDisplay('.')">.</button>
-            <button class="calc-btn equals" onclick="calculateResult()" style="grid-column: span 2;">=</button>
-        </div>
+        <button class="num-btn" onclick="appendToDisplay('1')">1</button>
+        <button class="num-btn" onclick="appendToDisplay('2')">2</button>
+        <button class="num-btn" onclick="appendToDisplay('3')">3</button>
+        <button class="op-btn" style="background: #2196F3;" onclick="calculate()">=</button>
         
-        <!-- વૉઇસ કંટ્રોલ -->
-        <div class="voice-control">
-            <div class="mic-container">
-                <button class="mic-btn" id="micButton">
-                    <i class="fas fa-microphone"></i>
-                </button>
-            </div>
-            
-            <div class="mic-status" id="statusText">
-                માઇક બટન દબાવો
-            </div>
-            
-            <div class="voice-examples">
-                જેમ કે: "100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ"
-            </div>
-        </div>
-        
-        <!-- ઇતિહાસ -->
-        <div class="history-section">
-            <div class="history-title">
-                <span>ઇતિહાસ</span>
-                <button style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 0.9rem;" onclick="clearHistory()">
-                    સાફ કરો
-                </button>
-            </div>
-            <div class="history-list" id="historyList">
-                <!-- ઇતિહાસ આઇટમ્સ અહીં દેખાશે -->
-            </div>
-        </div>
-        
-        <!-- ફૂટર -->
-        <div class="footer">
-            <p>વૉઇસ રેકોગ્નિશન માટે માઇક્રોફોન પરવાનગી આપો</p>
-            <div class="developer-info">
-                <div class="developer-name">Developed by Devendra Ramanuj</div>
-                <a href="tel:+919276505935" class="developer-phone">+91 9276505935</a>
-            </div>
-        </div>
+        <button class="num-btn" style="grid-column: span 2;" onclick="appendToDisplay('0')">0</button>
+        <button class="num-btn" onclick="appendToDisplay('.')">.</button>
+        <button class="op-btn" onclick="appendToDisplay('%')">%</button>
     </div>
 
-    <script>
-        // DOM એલિમેન્ટ્સ
-        const calculationDisplay = document.getElementById('calculationDisplay');
-        const resultDisplay = document.getElementById('resultDisplay');
-        const micButton = document.getElementById('micButton');
-        const statusText = document.getElementById('statusText');
-        const historyList = document.getElementById('historyList');
-        
-        // કેલ્ક્યુલેટર સ્ટેટ
-        let currentInput = '0';
-        let previousInput = '';
-        let operator = null;
-        let shouldResetScreen = false;
-        
-        // પેજ લોડ થયે સેટઅપ
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDisplay();
-            loadHistory();
-            
-            // વૉઇસ રેકોગ્નિશન સેટઅપ
-            setupVoiceRecognition();
-            
-            // કીબોર્ડ સપોર્ટ
-            document.addEventListener('keydown', handleKeyPress);
-        });
-        
-        // કેલ્ક્યુલેટર ફંક્શન્સ
-        function appendToDisplay(value) {
-            if (currentInput === '0' || shouldResetScreen) {
-                currentInput = value;
-                shouldResetScreen = false;
-            } else {
-                currentInput += value;
-            }
-            updateDisplay();
+    <div class="history-section">
+        <div class="history-header">
+            <strong>હિસ્ટ્રી</strong>
+            <button class="h-clear" onclick="clearHistory()">Clear History</button>
+        </div>
+        <div class="history-list" id="history"></div>
+    </div>
+
+    <div class="credit">
+        Developed by Devendra Ramanuj<br>
+        📞 9276505035
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    const historyDiv = document.getElementById('history');
+
+    function appendToDisplay(value) {
+        if (display.innerText === '0' && value !== '.') display.innerText = value;
+        else display.innerText += value;
+    }
+
+    function clearDisplay() { display.innerText = '0'; }
+
+    function deleteLast() {
+        if (display.innerText.length > 1) {
+            display.innerText = display.innerText.slice(0, -1);
+        } else {
+            display.innerText = '0';
         }
-        
-        function handleOperator(op) {
-            if (operator !== null) calculateResult();
-            
-            previousInput = currentInput;
-            operator = op;
-            shouldResetScreen = true;
-            
-            updateDisplay();
+    }
+
+    function calculate() {
+        try {
+            let expression = display.innerText;
+            const result = eval(expression.replace(/×/g, '*').replace(/÷/g, '/'));
+            addHistory(expression + " = " + result);
+            display.innerText = result;
+        } catch (e) {
+            display.innerText = "Error";
         }
+    }
+
+    function addHistory(text) {
+        const entry = document.createElement('div');
+        entry.style.padding = "5px 0";
+        entry.style.borderBottom = "1px solid #ddd";
+        entry.innerText = "• " + text;
+        historyDiv.prepend(entry);
+    }
+
+    function clearHistory() {
+        historyDiv.innerHTML = "";
+    }
+
+    // Voice Functionality
+    function startVoice() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'gu-IN';
+
+        recognition.onstart = () => { display.innerText = "સાંભળી રહ્યો છું..."; };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            processCommand(transcript);
+        };
+
+        recognition.onerror = () => {
+            display.innerText = "Error";
+            speak("ફરી પ્રયત્ન કરો");
+        };
+
+        recognition.start();
+    }
+
+    function processCommand(cmd) {
+        // Regex to extract numbers for interest calculation
+        const numbers = cmd.match(/\d+/g);
         
-        function calculateResult() {
-            if (operator === null || shouldResetScreen) return;
+        if (numbers && numbers.length >= 3) {
+            const p = parseFloat(numbers[0]);
+            const r = parseFloat(numbers[1]);
+            const t = parseFloat(numbers[2]);
+            const interest = (p * r * t) / 100;
             
-            let computation;
-            const prev = parseFloat(previousInput);
-            const current = parseFloat(currentInput);
-            
-            if (isNaN(prev) || isNaN(current)) return;
-            
-            switch (operator) {
-                case '+':
-                    computation = prev + current;
-                    break;
-                case '-':
-                    computation = prev - current;
-                    break;
-                case '*':
-                    computation = prev * current;
-                    break;
-                case '/':
-                    if (current === 0) {
-                        alert("શૂન્ય વડે ભાગાકાર શક્ય નથી");
-                        clearCalculator();
-                        return;
-                    }
-                    computation = prev / current;
-                    break;
-                case '%':
-                    computation = prev % current;
-                    break;
-                default:
-                    return;
-            }
-            
-            // ઇતિહાસમાં ઉમેરો
-            const expression = `${formatDisplayNumber(prev)} ${operator} ${formatDisplayNumber(current)}`;
-            addToHistory(expression, computation);
-            
-            // ડિસ્પ્લે અપડેટ
-            currentInput = computation.toString();
-            operator = null;
-            previousInput = '';
-            shouldResetScreen = true;
-            
-            calculationDisplay.textContent = expression + ' =';
-            resultDisplay.textContent = formatNumber(computation);
-            
-            // વૉઇસ આઉટપુટ
-            speakAnswer(`જવાબ છે ${formatNumber(computation)}`);
+            const msg = `${p} નું ${r}% લેખે ${t} વર્ષનું વ્યાજ ${interest} થાય`;
+            display.innerText = interest;
+            addHistory(msg);
+            speak(msg);
+        } else {
+            display.innerText = "સમજાયું નહીં";
+            speak("ક્ષમા કરશો મને સમજાયું નથી");
         }
-        
-        function clearCalculator() {
-            currentInput = '0';
-            previousInput = '';
-            operator = null;
-            shouldResetScreen = false;
-            updateDisplay();
-        }
-        
-        function deleteLast() {
-            if (currentInput.length > 1) {
-                currentInput = currentInput.slice(0, -1);
-            } else {
-                currentInput = '0';
-            }
-            updateDisplay();
-        }
-        
-        function updateDisplay() {
-            resultDisplay.textContent = formatDisplayNumber(currentInput);
-            
-            if (operator !== null) {
-                calculationDisplay.textContent = `${formatDisplayNumber(previousInput)} ${operator}`;
-            } else {
-                calculationDisplay.textContent = '';
-            }
-        }
-        
-        function formatDisplayNumber(num) {
-            const number = parseFloat(num);
-            if (isNaN(number)) return '0';
-            
-            return number.toLocaleString('en-IN', {
-                maximumFractionDigits: 10
-            });
-        }
-        
-        function formatNumber(num) {
-            const number = parseFloat(num);
-            if (isNaN(number)) return '0';
-            
-            if (Math.abs(number) >= 1e9) {
-                return number.toExponential(2);
-            }
-            
-            return number.toLocaleString('en-IN', {
-                maximumFractionDigits: 10
-            });
-        }
-        
-        // વૉઇસ રેકોગ્નિશન સેટઅપ
-        function setupVoiceRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = 'gu-IN';
-                
-                recognition.onstart = function() {
-                    isListening = true;
-                    micButton.classList.add('listening');
-                    statusText.textContent = "સાંભળી રહ્યા છું...";
-                    micButton.innerHTML = '<i class="fas fa-stop"></i>';
-                };
-                
-                recognition.onresult = function(event) {
-                    const transcript = event.results[0][0].transcript;
-                    processVoiceCommand(transcript);
-                };
-                
-                recognition.onerror = function(event) {
-                    console.error('Speech recognition error', event.error);
-                    statusText.textContent = "ત્રુટિ: " + event.error;
-                    stopListening();
-                };
-                
-                recognition.onend = function() {
-                    stopListening();
-                };
-            } else {
-                statusText.textContent = "તમારો બ્રાઉઝર વૉઇસ રેકોગ્નિશન સપોર્ટ કરતો નથી";
-                micButton.disabled = true;
-            }
-        }
-        
-        let recognition;
-        let isListening = false;
-        
-        // માઇક બટન ક્લિક
-        micButton.addEventListener('click', function() {
-            if (!isListening) {
-                startListening();
-            } else {
-                stopListening();
-            }
-        });
-        
-        function startListening() {
-            if (recognition) {
-                try {
-                    recognition.start();
-                } catch (error) {
-                    statusText.textContent = "માઇક્રોફોન એક્સેસની ત્રુટિ";
-                }
-            }
-        }
-        
-        function stopListening() {
-            isListening = false;
-            micButton.classList.remove('listening');
-            statusText.textContent = "માઇક બટન દબાવો";
-            micButton.innerHTML = '<i class="fas fa-microphone"></i>';
-        }
-        
-        // વૉઇસ કમાન્ડ પ્રોસેસ - વ્યાજ ગણતરી ફિક્સ
-        function processVoiceCommand(command) {
-            console.log("આદેશ: " + command);
-            statusText.textContent = `"${command}"`;
-            
-            let processedCommand = command.toLowerCase();
-            
-            // વ્યાજ ગણતરી માટે ખાસ હેન્ડલિંગ
-            if (processedCommand.includes('વ્યાજ') || 
-                processedCommand.includes('interest') || 
-                processedCommand.includes('vyaj')) {
-                
-                handleInterestCalculation(processedCommand);
-                return;
-            }
-            
-            // ગુજરાતી નંબર અને ઓપરેટર કન્વર્ઝન
-            const gujaratiNumbers = {
-                'શૂન્ય': '0', 'એક': '1', 'બે': '2', 'ત્રણ': '3', 'ચાર': '4',
-                'પાંચ': '5', 'છ': '6', 'સાત': '7', 'આઠ': '8', 'નવ': '9',
-                'દસ': '10', 'વીસ': '20', 'ત્રીસ': '30', 'ચાલીસ': '40', 'પચાસ': '50',
-                'સાઠ': '60', 'સિત્તેર': '70', 'એંસી': '80', 'નેવું': '90',
-                'સો': '100', 'હજાર': '1000', 'લાખ': '100000', 'કરોડ': '10000000',
-                'રૂપિયા': '', 'રૂપિયા': '', 'rs': '', '₹': ''
-            };
-            
-            const gujaratiOperators = {
-                'વત્તા': '+', 'પ્લસ': '+', 'ઉમેર': '+', 'જમા': '+',
-                'બાદ': '-', 'માઈનસ': '-', 'ઘટાડ': '-', 'ઓછા': '-',
-                'ગુણાકાર': '*', 'ગુણ': '*', 'મલ્ટીપ્લાય': '*', 'નાખવું': '*',
-                'ભાગાકાર': '/', 'ભાગ': '/', 'ડિવાઇડ': '/', 'વિભાજન': '/',
-                'ટકા': '%', 'પરસેન્ટ': '%', 'ટકા ગણો': '%',
-                'બરાબર': '=', 'ઇક્વલ': '=', 'કેટલું': '=',
-                'ડોટ': '.', 'પોઈન્ટ': '.', 'દશાંશ': '.'
-            };
-            
-            // નંબર રિપ્લેસ
-            Object.keys(gujaratiNumbers).forEach(gujNum => {
-                const regex = new RegExp(gujNum, 'gi');
-                processedCommand = processedCommand.replace(regex, gujaratiNumbers[gujNum]);
-            });
-            
-            // ઓપરેટર રિપ્લેસ
-            Object.keys(gujaratiOperators).forEach(gujOp => {
-                const regex = new RegExp(gujOp, 'gi');
-                processedCommand = processedCommand.replace(regex, gujaratiOperators[gujOp]);
-            });
-            
-            // વિશેષ કેસ: ટકા માટે
-            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*ટકા/g, ' * $1 / 100');
-            processedCommand = processedCommand.replace(/નો\s*(\d+)\s*ટકા/g, ' * $1 / 100');
-            processedCommand = processedCommand.replace(/ના\s*(\d+)\s*પરસેન્ટ/g, ' * $1 / 100');
-            
-            // કલેન કરો અને એક્ઝિક્યુટ કરો
-            processedCommand = processedCommand.replace(/[^\d\+\-\*\/\.\%\s]/g, '');
-            processedCommand = processedCommand.trim();
-            
-            console.log("પ્રોસેસ્ડ કમાન્ડ: " + processedCommand);
-            
-            // સિંપલ એક્સપ્રેશન હોય તો
-            if (processedCommand.includes('+') || processedCommand.includes('-') || 
-                processedCommand.includes('*') || processedCommand.includes('/')) {
-                
-                try {
-                    let result;
-                    if (processedCommand.includes('%')) {
-                        const parts = processedCommand.split(/([\+\-\*\/])/);
-                        let expression = '';
-                        
-                        for (let i = 0; i < parts.length; i++) {
-                            if (parts[i].includes('%')) {
-                                const num = parseFloat(parts[i].replace('%', ''));
-                                expression += `(${num} / 100)`;
-                            } else {
-                                expression += parts[i];
-                            }
-                        }
-                        
-                        result = eval(expression);
-                    } else {
-                        result = eval(processedCommand);
-                    }
-                    
-                    currentInput = result.toString();
-                    calculationDisplay.textContent = processedCommand + ' =';
-                    resultDisplay.textContent = formatNumber(result);
-                    
-                    addToHistory(processedCommand, result);
-                    speakAnswer(`જવાબ છે ${formatNumber(result)}`);
-                    
-                } catch (error) {
-                    speakAnswer("માફ કરશો, ગણતરીમાં ત્રુટિ આવી");
-                }
-                
-            } else if (processedCommand.includes('%')) {
-                const num = parseFloat(processedCommand.replace('%', ''));
-                if (!isNaN(num)) {
-                    const currentNum = parseFloat(currentInput);
-                    const result = (currentNum * num) / 100;
-                    currentInput = result.toString();
-                    calculationDisplay.textContent = `${formatNumber(currentNum)} ના ${num}% =`;
-                    resultDisplay.textContent = formatNumber(result);
-                    addToHistory(`${currentNum} ના ${num}%`, result);
-                    speakAnswer(`${num} ટકા છે ${formatNumber(result)}`);
-                }
-                
-            } else {
-                const numbers = processedCommand.match(/\d+(\.\d+)?/g);
-                if (numbers && numbers.length > 0) {
-                    clearCalculator();
-                    currentInput = numbers[0];
-                    updateDisplay();
-                    speakAnswer(numbers[0]);
-                } else {
-                    speakAnswer("કોઈ નંબર સમજાયો નથી");
-                }
-            }
-        }
-        
-        // વ્યાજ ગણતરી હેન્ડલિંગ - FIXED
-        function handleInterestCalculation(command) {
-            console.log("વ્યાજ ગણતરી: " + command);
-            
-            // નંબરો એક્સટ્રેક્ટ કરો
-            const numbers = command.match(/\d+/g);
-            
-            if (!numbers || numbers.length < 2) {
-                speakAnswer("માફ કરશો, મને મૂળધન અને ટકા સમજાયા નથી");
-                return;
-            }
-            
-            const principal = parseFloat(numbers[0]);
-            const rate = parseFloat(numbers[1]);
-            let time = 1; // ડિફોલ્ટ 1 વર્ષ
-            
-            // સમય એક્સટ્રેક્ટ કરો
-            const timeMatch = command.match(/(\d+)\s*વર્ષ|(\d+)\s*સાલ|(\d+)\s*year/i);
-            if (timeMatch) {
-                for (let i = 1; i <= 3; i++) {
-                    if (timeMatch[i]) {
-                        time = parseFloat(timeMatch[i]);
-                        break;
-                    }
-                }
-            }
-            
-            // સાદુ વ્યાજ ગણતરી
-            const interest = (principal * rate * time) / 100;
-            const total = principal + interest;
-            
-            // રિઝલ્ટ ફોર્મેટ કરો
-            const resultText = `મૂળધન: ₹${formatNumber(principal)} 
-વ્યાજ દર: ${rate}% પ્રતિ વર્ષ 
-સમય: ${time} વર્ષ 
-સાદુ વ્યાજ: ₹${formatNumber(interest)} 
-કુલ રકમ: ₹${formatNumber(total)}`;
-            
-            // ડિસ્પ્લે અપડેટ
-            calculationDisplay.textContent = `વ્યાજ = (${principal} × ${rate} × ${time}) / 100`;
-            resultDisplay.textContent = formatNumber(interest);
-            
-            // ઇતિહાસમાં ઉમેરો
-            const expression = `₹${formatNumber(principal)} પર ${rate}% ${time} વર્ષનું વ્યાજ`;
-            addToHistory(expression, interest);
-            
-            // વૉઇસ આઉટપુટ
-            speakAnswer(`${formatNumber(principal)} રૂપિયા પર ${rate} ટકા દરે ${time} વર્ષનું સાદુ વ્યાજ ${formatNumber(interest)} રૂપિયા છે. કુલ રકમ ${formatNumber(total)} રૂપિયા થાય.`);
-            
-            // વિગતવાર જવાબ બતાવો
-            setTimeout(() => {
-                alert(`વ્યાજ ગણતરી:\n${resultText}`);
-            }, 1000);
-        }
-        
-        // વૉઇસ આઉટપુટ
-        function speakAnswer(text) {
-            if ('speechSynthesis' in window) {
-                const speech = new SpeechSynthesisUtterance();
-                speech.text = text.toString();
-                speech.lang = 'gu-IN';
-                speech.rate = 0.9;
-                speech.pitch = 1;
-                speech.volume = 1;
-                
-                window.speechSynthesis.speak(speech);
-            }
-        }
-        
-        // કીબોર્ડ સપોર્ટ
-        function handleKeyPress(e) {
-            const key = e.key;
-            
-            if (key >= '0' && key <= '9') {
-                appendToDisplay(key);
-            } else if (key === '.') {
-                appendToDisplay('.');
-            } else if (key === '+') {
-                handleOperator('+');
-            } else if (key === '-') {
-                handleOperator('-');
-            } else if (key === '*') {
-                handleOperator('*');
-            } else if (key === '/') {
-                e.preventDefault();
-                handleOperator('/');
-            } else if (key === '%') {
-                const current = parseFloat(currentInput);
-                if (!isNaN(current)) {
-                    const percent = prompt("કેટલા ટકા ગણવા છે?", "10");
-                    if (percent && !isNaN(parseFloat(percent))) {
-                        const result = (current * parseFloat(percent)) / 100;
-                        currentInput = result.toString();
-                        calculationDisplay.textContent = `${formatNumber(current)} ના ${percent}% =`;
-                        resultDisplay.textContent = formatNumber(result);
-                        addToHistory(`${current} ના ${percent}%`, result);
-                    }
-                }
-            } else if (key === 'Enter' || key === '=') {
-                e.preventDefault();
-                calculateResult();
-            } else if (key === 'Escape' || key === 'Delete') {
-                clearCalculator();
-            } else if (key === 'Backspace') {
-                deleteLast();
-            } else if (key === ' ') {
-                e.preventDefault();
-                micButton.click();
-            } else if (key === 'i' || key === 'I') {
-                e.preventDefault();
-                // વ્યાજ કેલ્ક્યુલેટર ઓપન કરો
-                const principal = prompt("મૂળધન (રૂપિયા) દાખલ કરો:", "100000");
-                const rate = prompt("વ્યાજ દર (ટકા) દાખલ કરો:", "10");
-                const time = prompt("સમય (વર્ષ) દાખલ કરો:", "1");
-                
-                if (principal && rate && time) {
-                    const p = parseFloat(principal);
-                    const r = parseFloat(rate);
-                    const t = parseFloat(time);
-                    
-                    if (!isNaN(p) && !isNaN(r) && !isNaN(t)) {
-                        const interest = (p * r * t) / 100;
-                        const total = p + interest;
-                        
-                        calculationDisplay.textContent = `વ્યાજ = (${p} × ${r} × ${t}) / 100`;
-                        resultDisplay.textContent = formatNumber(interest);
-                        
-                        speakAnswer(`${formatNumber(p)} રૂપિયા પર ${r} ટકા દરે ${t} વર્ષનું વ્યાજ ${formatNumber(interest)} રૂપિયા છે`);
-                    }
-                }
-            }
-        }
-        
-        // ઇતિહાસ ફંક્શન્સ
-        function addToHistory(expression, result) {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('gu-IN', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            const historyItem = document.createElement('div');
-            historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-                <div class="history-calculation">${expression} =</div>
-                <div class="history-result">${formatNumber(result)}</div>
-            `;
-            
-            historyItem.addEventListener('click', function() {
-                clearCalculator();
-                currentInput = result.toString();
-                updateDisplay();
-            });
-            
-            historyList.prepend(historyItem);
-            
-            saveHistory(expression, result, timeString);
-            
-            if (historyList.children.length > 10) {
-                historyList.removeChild(historyList.lastChild);
-            }
-        }
-        
-        function saveHistory(expression, result, time) {
-            let history = JSON.parse(localStorage.getItem('devCalcHistory') || '[]');
-            
-            history.unshift({
-                expression: expression,
-                result: result,
-                time: time,
-                date: new Date().toISOString()
-            });
-            
-            if (history.length > 15) {
-                history = history.slice(0, 15);
-            }
-            
-            localStorage.setItem('devCalcHistory', JSON.stringify(history));
-        }
-        
-        function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('devCalcHistory') || '[]');
-            
-            history.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    <div class="history-calculation">${item.expression} =</div>
-                    <div class="history-result">${formatNumber(item.result)}</div>
-                `;
-                
-                historyItem.addEventListener('click', function() {
-                    clearCalculator();
-                    currentInput = item.result.toString();
-                    updateDisplay();
-                });
-                
-                historyList.appendChild(historyItem);
-            });
-        }
-        
-        function clearHistory() {
-            if (confirm("શું તમે ઇતિહાસ સાફ કરવા માંગો છો?")) {
-                historyList.innerHTML = '';
-                localStorage.removeItem('devCalcHistory');
-            }
-        }
-    </script>
+    }
+
+    function speak(text) {
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'hi-IN'; 
+        synth.speak(utter);
+    }
+</script>
+
 </body>
 </html>
