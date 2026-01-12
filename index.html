@@ -25,7 +25,7 @@
         
         .container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             background: #fff;
             border-radius: 25px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
@@ -219,6 +219,34 @@
             line-height: 1.4;
         }
         
+        /* વ્યાજ કેલ્ક્યુલેટર */
+        .interest-calculator {
+            background: #e8f4fd;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px dashed #3498db;
+        }
+        
+        .interest-title {
+            color: #0c2461;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .interest-formula {
+            font-size: 0.85rem;
+            color: #2c3e50;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
         /* ઇતિહાસ */
         .history-section {
             background: #f8f9fa;
@@ -357,7 +385,21 @@
             <div class="result-display" id="resultDisplay">0</div>
         </div>
         
-        <!-- કેલ્ક્યુલેટર બટન્સ (FIXED OPERATORS) -->
+        <!-- વ્યાજ કેલ્ક્યુલેટર -->
+        <div class="interest-calculator">
+            <div class="interest-title">
+                <i class="fas fa-percentage"></i>
+                વ્યાજ કેલ્ક્યુલેટર
+            </div>
+            <div class="interest-formula">
+                સાદુ વ્યાજ = (મૂળધન × દર × સમય) / 100
+            </div>
+            <div class="voice-examples">
+                "100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ"
+            </div>
+        </div>
+        
+        <!-- કેલ્ક્યુલેટર બટન્સ -->
         <div class="calculator-buttons">
             <button class="calc-btn clear" onclick="clearCalculator()">C</button>
             <button class="calc-btn function" onclick="deleteLast()">⌫</button>
@@ -397,7 +439,7 @@
             </div>
             
             <div class="voice-examples">
-                જેમ કે: "1000 વત્તા 500" અથવા "5000 ના 10 ટકા"
+                જેમ કે: "100000 નું 10 ટકા લેખે 1 વર્ષનું વ્યાજ"
             </div>
         </div>
         
@@ -432,7 +474,7 @@
         const statusText = document.getElementById('statusText');
         const historyList = document.getElementById('historyList');
         
-        // કેલ્ક્યુલેટર સ્ટેટ - FIXED
+        // કેલ્ક્યુલેટર સ્ટેટ
         let currentInput = '0';
         let previousInput = '';
         let operator = null;
@@ -450,7 +492,7 @@
             document.addEventListener('keydown', handleKeyPress);
         });
         
-        // કેલ્ક્યુલેટર ફંક્શન્સ - FIXED
+        // કેલ્ક્યુલેટર ફંક્શન્સ
         function appendToDisplay(value) {
             if (currentInput === '0' || shouldResetScreen) {
                 currentInput = value;
@@ -553,7 +595,6 @@
             const number = parseFloat(num);
             if (isNaN(number)) return '0';
             
-            // ડિસ્પ્લે માટે કોમા સાથે ફોર્મેટ
             return number.toLocaleString('en-IN', {
                 maximumFractionDigits: 10
             });
@@ -563,7 +604,6 @@
             const number = parseFloat(num);
             if (isNaN(number)) return '0';
             
-            // બડા નંબર માટે
             if (Math.abs(number) >= 1e9) {
                 return number.toExponential(2);
             }
@@ -639,12 +679,21 @@
             micButton.innerHTML = '<i class="fas fa-microphone"></i>';
         }
         
-        // વૉઇસ કમાન્ડ પ્રોસેસ
+        // વૉઇસ કમાન્ડ પ્રોસેસ - વ્યાજ ગણતરી ફિક્સ
         function processVoiceCommand(command) {
             console.log("આદેશ: " + command);
             statusText.textContent = `"${command}"`;
             
             let processedCommand = command.toLowerCase();
+            
+            // વ્યાજ ગણતરી માટે ખાસ હેન્ડલિંગ
+            if (processedCommand.includes('વ્યાજ') || 
+                processedCommand.includes('interest') || 
+                processedCommand.includes('vyaj')) {
+                
+                handleInterestCalculation(processedCommand);
+                return;
+            }
             
             // ગુજરાતી નંબર અને ઓપરેટર કન્વર્ઝન
             const gujaratiNumbers = {
@@ -652,7 +701,8 @@
                 'પાંચ': '5', 'છ': '6', 'સાત': '7', 'આઠ': '8', 'નવ': '9',
                 'દસ': '10', 'વીસ': '20', 'ત્રીસ': '30', 'ચાલીસ': '40', 'પચાસ': '50',
                 'સાઠ': '60', 'સિત્તેર': '70', 'એંસી': '80', 'નેવું': '90',
-                'સો': '100', 'હજાર': '1000', 'લાખ': '100000', 'કરોડ': '10000000'
+                'સો': '100', 'હજાર': '1000', 'લાખ': '100000', 'કરોડ': '10000000',
+                'રૂપિયા': '', 'રૂપિયા': '', 'rs': '', '₹': ''
             };
             
             const gujaratiOperators = {
@@ -667,13 +717,13 @@
             
             // નંબર રિપ્લેસ
             Object.keys(gujaratiNumbers).forEach(gujNum => {
-                const regex = new RegExp(gujNum, 'g');
+                const regex = new RegExp(gujNum, 'gi');
                 processedCommand = processedCommand.replace(regex, gujaratiNumbers[gujNum]);
             });
             
             // ઓપરેટર રિપ્લેસ
             Object.keys(gujaratiOperators).forEach(gujOp => {
-                const regex = new RegExp(gujOp, 'g');
+                const regex = new RegExp(gujOp, 'gi');
                 processedCommand = processedCommand.replace(regex, gujaratiOperators[gujOp]);
             });
             
@@ -693,10 +743,8 @@
                 processedCommand.includes('*') || processedCommand.includes('/')) {
                 
                 try {
-                    // પ્રથમ કેલ્ક્યુલેટ કરો
                     let result;
                     if (processedCommand.includes('%')) {
-                        // ટકા હોય તો
                         const parts = processedCommand.split(/([\+\-\*\/])/);
                         let expression = '';
                         
@@ -714,15 +762,11 @@
                         result = eval(processedCommand);
                     }
                     
-                    // ડિસ્પ્લે અપડેટ
                     currentInput = result.toString();
                     calculationDisplay.textContent = processedCommand + ' =';
                     resultDisplay.textContent = formatNumber(result);
                     
-                    // ઇતિહાસ
                     addToHistory(processedCommand, result);
-                    
-                    // વૉઇસ આઉટપુટ
                     speakAnswer(`જવાબ છે ${formatNumber(result)}`);
                     
                 } catch (error) {
@@ -730,19 +774,18 @@
                 }
                 
             } else if (processedCommand.includes('%')) {
-                // ફક્ત ટકા
                 const num = parseFloat(processedCommand.replace('%', ''));
                 if (!isNaN(num)) {
-                    const result = (parseFloat(currentInput) * num) / 100;
+                    const currentNum = parseFloat(currentInput);
+                    const result = (currentNum * num) / 100;
                     currentInput = result.toString();
-                    calculationDisplay.textContent = `${currentInput} ના ${num}% =`;
+                    calculationDisplay.textContent = `${formatNumber(currentNum)} ના ${num}% =`;
                     resultDisplay.textContent = formatNumber(result);
-                    addToHistory(`${currentInput} ના ${num}%`, result);
+                    addToHistory(`${currentNum} ના ${num}%`, result);
                     speakAnswer(`${num} ટકા છે ${formatNumber(result)}`);
                 }
                 
             } else {
-                // માત્ર નંબર
                 const numbers = processedCommand.match(/\d+(\.\d+)?/g);
                 if (numbers && numbers.length > 0) {
                     clearCalculator();
@@ -753,6 +796,61 @@
                     speakAnswer("કોઈ નંબર સમજાયો નથી");
                 }
             }
+        }
+        
+        // વ્યાજ ગણતરી હેન્ડલિંગ - FIXED
+        function handleInterestCalculation(command) {
+            console.log("વ્યાજ ગણતરી: " + command);
+            
+            // નંબરો એક્સટ્રેક્ટ કરો
+            const numbers = command.match(/\d+/g);
+            
+            if (!numbers || numbers.length < 2) {
+                speakAnswer("માફ કરશો, મને મૂળધન અને ટકા સમજાયા નથી");
+                return;
+            }
+            
+            const principal = parseFloat(numbers[0]);
+            const rate = parseFloat(numbers[1]);
+            let time = 1; // ડિફોલ્ટ 1 વર્ષ
+            
+            // સમય એક્સટ્રેક્ટ કરો
+            const timeMatch = command.match(/(\d+)\s*વર્ષ|(\d+)\s*સાલ|(\d+)\s*year/i);
+            if (timeMatch) {
+                for (let i = 1; i <= 3; i++) {
+                    if (timeMatch[i]) {
+                        time = parseFloat(timeMatch[i]);
+                        break;
+                    }
+                }
+            }
+            
+            // સાદુ વ્યાજ ગણતરી
+            const interest = (principal * rate * time) / 100;
+            const total = principal + interest;
+            
+            // રિઝલ્ટ ફોર્મેટ કરો
+            const resultText = `મૂળધન: ₹${formatNumber(principal)} 
+વ્યાજ દર: ${rate}% પ્રતિ વર્ષ 
+સમય: ${time} વર્ષ 
+સાદુ વ્યાજ: ₹${formatNumber(interest)} 
+કુલ રકમ: ₹${formatNumber(total)}`;
+            
+            // ડિસ્પ્લે અપડેટ
+            calculationDisplay.textContent = `વ્યાજ = (${principal} × ${rate} × ${time}) / 100`;
+            resultDisplay.textContent = formatNumber(interest);
+            
+            // ઇતિહાસમાં ઉમેરો
+            const expression = `₹${formatNumber(principal)} પર ${rate}% ${time} વર્ષનું વ્યાજ`;
+            addToHistory(expression, interest);
+            
+            // વૉઇસ આઉટપુટ
+            speakAnswer(`${formatNumber(principal)} રૂપિયા પર ${rate} ટકા દરે ${time} વર્ષનું સાદુ વ્યાજ ${formatNumber(interest)} રૂપિયા છે. કુલ રકમ ${formatNumber(total)} રૂપિયા થાય.`);
+            
+            // વિગતવાર જવાબ બતાવો
+            setTimeout(() => {
+                alert(`વ્યાજ ગણતરી:\n${resultText}`);
+            }, 1000);
         }
         
         // વૉઇસ આઉટપુટ
@@ -787,7 +885,6 @@
                 e.preventDefault();
                 handleOperator('/');
             } else if (key === '%') {
-                // ટકા કેલ્ક્યુલેશન
                 const current = parseFloat(currentInput);
                 if (!isNaN(current)) {
                     const percent = prompt("કેટલા ટકા ગણવા છે?", "10");
@@ -809,6 +906,28 @@
             } else if (key === ' ') {
                 e.preventDefault();
                 micButton.click();
+            } else if (key === 'i' || key === 'I') {
+                e.preventDefault();
+                // વ્યાજ કેલ્ક્યુલેટર ઓપન કરો
+                const principal = prompt("મૂળધન (રૂપિયા) દાખલ કરો:", "100000");
+                const rate = prompt("વ્યાજ દર (ટકા) દાખલ કરો:", "10");
+                const time = prompt("સમય (વર્ષ) દાખલ કરો:", "1");
+                
+                if (principal && rate && time) {
+                    const p = parseFloat(principal);
+                    const r = parseFloat(rate);
+                    const t = parseFloat(time);
+                    
+                    if (!isNaN(p) && !isNaN(r) && !isNaN(t)) {
+                        const interest = (p * r * t) / 100;
+                        const total = p + interest;
+                        
+                        calculationDisplay.textContent = `વ્યાજ = (${p} × ${r} × ${t}) / 100`;
+                        resultDisplay.textContent = formatNumber(interest);
+                        
+                        speakAnswer(`${formatNumber(p)} રૂપિયા પર ${r} ટકા દરે ${t} વર્ષનું વ્યાજ ${formatNumber(interest)} રૂપિયા છે`);
+                    }
+                }
             }
         }
         
